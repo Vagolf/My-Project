@@ -1,3 +1,4 @@
+﻿using SupanthaPaul;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private TrailRenderer tr;
 
+    //now it's can't dash, but you can add it back if you want
     [Header("Dash Settings")]
     [SerializeField] private float dashPower = 5f;
     [SerializeField] private float dashTime = 0.1f;
@@ -23,8 +25,8 @@ public class Movement : MonoBehaviour
     public BoxCollider2D boxCollider;
     public Animator anim;
 
-    private bool canDash = true;
-    private bool isDashing = false;
+    //private bool canDash = true;
+    //private bool isDashing = false;
     private bool isCrouching = false;
     private float horizontalInput;
     private bool ground;
@@ -38,11 +40,22 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
-        if (isDashing) return;
+        //if (isDashing) return;
 
         // Move left-right
         horizontalInput = Input.GetAxis("Horizontal");
-        body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+
+        // Prevent running if crouching
+        if (isCrouching)
+        {
+            body.velocity = new Vector2(0, body.velocity.y);
+        }
+        else
+        {
+            body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+        }
+
+
 
         // Flip player
         if (horizontalInput > 0.01f)
@@ -57,10 +70,10 @@ public class Movement : MonoBehaviour
         }
 
         // Dash (L)
-        if (Input.GetKeyDown(KeyCode.L) && canDash)
-        {
-            StartCoroutine(Dash());
-        }
+        //if (Input.GetKeyDown(KeyCode.L) && canDash)
+        //{
+        //    StartCoroutine(Dash());
+        //}
 
         // Crouch (S)
         if (Input.GetKey(KeyCode.S) && IsGrounded())
@@ -100,30 +113,5 @@ public class Movement : MonoBehaviour
             ground = true;
         }
 
-    }
-
-
-    private IEnumerator Dash()
-    {
-        dashSoundEffect?.Play();
-        canDash = false;
-        isDashing = true;
-
-        float originalGravity = body.gravityScale;
-        body.gravityScale = 0;
-        tr.emitting = true;
-
-        // Move instantly in facing direction
-        Vector3 dashDirection = new Vector3(transform.localScale.x * dashPower, 0f, 0f);
-        transform.position += dashDirection;
-
-        yield return new WaitForSeconds(dashTime);
-
-        tr.emitting = false;
-        body.gravityScale = originalGravity;
-        isDashing = false;
-
-        yield return new WaitForSeconds(dashCooldown);
-        canDash = true;
     }
 }

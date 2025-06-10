@@ -227,7 +227,7 @@ Transform:
   m_GameObject: {fileID: 143203583}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -18.13, y: -9.64, z: 0.09502016}
+  m_LocalPosition: {x: -16.4, y: 10.2, z: 0.09502016}
   m_LocalScale: {x: 10, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -293,7 +293,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3
   m_Material: {fileID: 6200000, guid: 6dd088f31322e184aacad059764cee90, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -317,7 +317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4ec153b6ebe4c44bab5017de0a2b172, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 20
   jumpForce: 10
   groundLayer:
     serializedVersion: 2
@@ -325,7 +325,7 @@ MonoBehaviour:
   tr: {fileID: 0}
   dashPower: 5
   dashTime: 0.1
-  dashCooldown: 2
+  dashCooldown: 0.2
   jumpSoundEffect: {fileID: 0}
   dashSoundEffect: {fileID: 0}
   boxCollider: {fileID: 143203587}
