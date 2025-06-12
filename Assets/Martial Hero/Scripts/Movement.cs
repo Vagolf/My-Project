@@ -6,7 +6,7 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float speed = 5f;
+    [SerializeField] private float speed = 20f;
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private TrailRenderer tr;
@@ -30,6 +30,7 @@ public class Movement : MonoBehaviour
     private bool isCrouching = false;
     private float horizontalInput;
     private bool ground;
+    private bool attack;
 
     private void Awake()
     {
@@ -40,40 +41,8 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
-        //if (isDashing) return;
-
         // Move left-right
         horizontalInput = Input.GetAxis("Horizontal");
-
-        // Prevent running if crouching
-        if (isCrouching)
-        {
-            body.velocity = new Vector2(0, body.velocity.y);
-        }
-        else
-        {
-            body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
-        }
-
-
-
-        // Flip player
-        if (horizontalInput > 0.01f)
-            transform.localScale = new Vector3(10, 10, 1);
-        else if (horizontalInput < -0.01f)
-            transform.localScale = new Vector3(-10, 10, 1);
-
-        // Jump (W)
-        if (Input.GetKeyDown(KeyCode.W) && IsGrounded() && !isCrouching)
-        {
-            Jump();
-        }
-
-        // Dash (L)
-        //if (Input.GetKeyDown(KeyCode.L) && canDash)
-        //{
-        //    StartCoroutine(Dash());
-        //}
 
         // Crouch (S)
         if (Input.GetKey(KeyCode.S) && IsGrounded())
@@ -83,6 +52,42 @@ public class Movement : MonoBehaviour
         else
         {
             isCrouching = false;
+        }
+
+        // Attack (J)
+        if (Input.GetKeyDown(KeyCode.J) && !isCrouching && ground)
+        {
+            // หยุดเดินทันที
+            body.velocity = new Vector2(0, body.velocity.y);
+            anim.SetBool("run", false);
+            anim.SetBool("atk", true);
+            attack = true;
+            speed = 0; // Stop moving while attacking
+        }
+        else
+        {
+            // Prevent running if crouching
+            if (isCrouching)
+            {
+                body.velocity = new Vector2(0, body.velocity.y);
+            }
+            else
+            {
+                speed = 20f; // Reset speed when not crouching or attacking
+                body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+            }
+        }
+
+            // Flip player (A, D)
+            if (horizontalInput > 0.01f)
+                transform.localScale = new Vector3(10, 10, 1);
+            else if (horizontalInput < -0.01f)
+                transform.localScale = new Vector3(-10, 10, 1);
+   
+        // Jump (W)
+        if (Input.GetKeyDown(KeyCode.W) && IsGrounded() && !isCrouching)
+        {
+            Jump();
         }
 
         // Animator update
@@ -113,5 +118,11 @@ public class Movement : MonoBehaviour
             ground = true;
         }
 
+    }
+
+    public void StopAttackAnimation()
+    {
+        anim.SetBool("atk", false);
+        attack = false;
     }
 }
