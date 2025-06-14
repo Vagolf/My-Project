@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Movement : MonoBehaviour
+public class Player : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float speed = 20f;
@@ -27,9 +27,16 @@ public class Movement : MonoBehaviour
 
     //private bool canDash = true;
     //private bool isDashing = false;
-    private bool isCrouching = false;
+    public bool isCrouching = false;
     private float horizontalInput;
     private bool ground;
+
+    [Header("Attack")]
+    public GameObject AttackPoint;
+    public float radius;
+    public LayerMask Enemy;
+    public float damage;
+
     private bool attack;
 
     private void Awake()
@@ -61,6 +68,7 @@ public class Movement : MonoBehaviour
             body.velocity = new Vector2(0, body.velocity.y);
             anim.SetBool("run", false);
             anim.SetBool("atk", true);
+            Attack();
             attack = true;
             speed = 0; // Stop moving while attacking
         }
@@ -78,12 +86,12 @@ public class Movement : MonoBehaviour
             }
         }
 
-            // Flip player (A, D)
-            if (horizontalInput > 0.01f)
-                transform.localScale = new Vector3(10, 10, 1);
-            else if (horizontalInput < -0.01f)
-                transform.localScale = new Vector3(-10, 10, 1);
-   
+        // Flip player (A, D)
+        if (horizontalInput > 0.01f)
+            transform.localScale = new Vector3(10, 10, 1);
+        else if (horizontalInput < -0.01f)
+            transform.localScale = new Vector3(-10, 10, 1);
+
         // Jump (W)
         if (Input.GetKeyDown(KeyCode.W) && IsGrounded() && !isCrouching)
         {
@@ -124,5 +132,24 @@ public class Movement : MonoBehaviour
     {
         anim.SetBool("atk", false);
         attack = false;
+    }
+
+    public void Attack()
+    {
+        Collider2D[] enemy = Physics2D.OverlapCircleAll(AttackPoint.transform.position, radius, Enemy);
+        foreach (Collider2D enemyGameobject in enemy)
+        {
+            Debug.Log("Hit Enemy");
+            enemyGameobject.GetComponent<HealthEnemy>().startingHealth -= damage; // Assuming Enemy script has TakeDamage method
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (AttackPoint != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(AttackPoint.transform.position, radius);
+        }
     }
 }
