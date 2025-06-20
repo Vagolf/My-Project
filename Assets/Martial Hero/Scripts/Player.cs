@@ -32,8 +32,14 @@ public class Player : MonoBehaviour
     private bool ground;
 
     [Header("Attack")]
+    //basic attack
     public GameObject AttackPoint;
     public float radius;
+
+    //crouch attack
+    public GameObject CrouchAttackPoint; // Uncomment if you have a separate point for crouch attack
+    public float crouchRadius; // Uncomment if you have a separate radius for crouch attack
+
     public LayerMask Enemy;
     public float damage;
 
@@ -62,22 +68,34 @@ public class Player : MonoBehaviour
         }
 
         // Attack (J)
-        if (Input.GetKeyDown(KeyCode.J) && !isCrouching && ground)
+        if (Input.GetKeyDown(KeyCode.J) && ground && !isCrouching)
         {
-            // หยุดเดินทันที
-            body.velocity = new Vector2(0, body.velocity.y);
-            anim.SetBool("run", false);
-            anim.SetBool("atk", true);
-            Attack();
-            attack = true;
-            speed = 0; // Stop moving while attacking
+            
+            // Normal attack
+                body.velocity = new Vector2(0, body.velocity.y);
+                anim.SetBool("run", false);
+                anim.SetBool("atk", true);
+                attack = true;
+                speed = 0;
         }
         else
         {
             // Prevent running if crouching
             if (isCrouching)
             {
-                body.velocity = new Vector2(0, body.velocity.y);
+                // Crouch attack
+                if (Input.GetKeyDown(KeyCode.J) && ground)
+                {
+                    body.velocity = new Vector2(0, body.velocity.y);
+                    anim.SetBool("run", false);
+                    anim.SetBool("atk", true); // Use a different trigger for crouch attack
+                    attack = true;
+                    speed = 0;
+                }
+                else
+                {
+                    body.velocity = new Vector2(0, body.velocity.y);
+                }
             }
             else
             {
@@ -140,7 +158,17 @@ public class Player : MonoBehaviour
         foreach (Collider2D enemyGameobject in enemy)
         {
             Debug.Log("Hit Enemy");
-            enemyGameobject.GetComponent<HealthEnemy>().startingHealth -= damage; // Assuming Enemy script has TakeDamage method
+            enemyGameobject.GetComponent<HealthEnemy>().TakeDamage(100); // Assuming Enemy script has TakeDamage method
+        }
+    }
+    // Add this method for crouch attack
+    public void CrouchAttack()
+    {
+        Collider2D[] enemy = Physics2D.OverlapCircleAll(CrouchAttackPoint.transform.position, crouchRadius, Enemy);
+        foreach (Collider2D enemyGameobject in enemy)
+        {
+            Debug.Log("Crouch Hit Enemy");
+            enemyGameobject.GetComponent<HealthEnemy>().TakeDamage(300); // Example: more damage for crouch attack
         }
     }
 
@@ -151,5 +179,15 @@ public class Player : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(AttackPoint.transform.position, radius);
         }
+        if (CrouchAttackPoint != null) { // Uncomment if you have a separate point for crouch attack
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(CrouchAttackPoint.transform.position, crouchRadius); // Uncomment if you have a separate radius for crouch attack
+        }
+    }
+
+    private void stopTakingDamage()
+    {
+        anim.SetBool("hurt", false);
+        body.velocity = new Vector2(body.velocity.x, 0); // Reset vertical velocity
     }
 }

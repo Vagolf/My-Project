@@ -32,6 +32,7 @@ public class HealthEnemy : MonoBehaviour
     {
         if (startingHealth < 0) // For test damage
         {
+            
             Debug.Log("Enemy health is below zero, taking damage.");
         }
     }

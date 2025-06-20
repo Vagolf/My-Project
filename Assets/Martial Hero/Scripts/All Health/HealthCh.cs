@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// No Thai!!!
-// iFeature ???
 public class HealthCh : MonoBehaviour
 {
     [Header("Health")]
@@ -15,12 +13,7 @@ public class HealthCh : MonoBehaviour
     private bool isDead;
     public float currentHealth { get; private set; }
     private Animator anim;
-
-    [Header("iFrames")]
-    [SerializeField] private float iFramesDuration;
-    [SerializeField] private int numberOfFlashes;
     private SpriteRenderer spriteRend;
-    private bool isInvulnerable = false;
 
     private void Start()
     {
@@ -54,7 +47,7 @@ public class HealthCh : MonoBehaviour
 
     public void TakeDamage(float _damage)
     {
-        if (!isInvulnerable)
+        if (!isDead)
         {
             currentHealth = Mathf.Clamp(currentHealth - _damage, 0, startingHealth);
             healthBar.SetHealth(currentHealth);
@@ -67,23 +60,7 @@ public class HealthCh : MonoBehaviour
             else
             {
                 anim.SetTrigger("hurt");
-                StartCoroutine(Invunerability());
             }
         }
-    }
-
-    private IEnumerator Invunerability()
-    {
-        isInvulnerable = true;
-        Physics2D.IgnoreLayerCollision(1, 0, true); // Layer number Player and Enemy
-        for (int i = 0; i < numberOfFlashes; i++)
-        {
-            spriteRend.color = new Color(1, 0, 0, 0.5f);
-            yield return new WaitForSeconds(iFramesDuration / (numberOfFlashes * 2));
-            spriteRend.color = Color.white;
-            yield return new WaitForSeconds(iFramesDuration / (numberOfFlashes * 2));
-        }
-        Physics2D.IgnoreLayerCollision(1, 0, false); // Layer number Player and Enemy
-        isInvulnerable = false;
     }
 }
