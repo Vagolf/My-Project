@@ -15,6 +15,13 @@ public class HealthCh : MonoBehaviour
     private Animator anim;
     private SpriteRenderer spriteRend;
 
+    // Prevent hurt trigger spamming
+    private bool isHurting = false;
+    [SerializeField] private float hurtAnimDuration = 0.3f; // Adjust to match your hurt animation length
+
+    [Header("GameManager")]
+    [SerializeField] private GameManagerScript gameManager; // Reference to the GameManager script
+
     private void Start()
     {
         isDead = false;
@@ -41,26 +48,35 @@ public class HealthCh : MonoBehaviour
         if (currentHealth <= 0 && !isDead)
         {
             anim.SetTrigger("die");
+            GetComponent<Player>().enabled = false;
             isDead = true;
         }
     }
 
     public void TakeDamage(float _damage)
     {
-        if (!isDead)
-        {
-            currentHealth = Mathf.Clamp(currentHealth - _damage, 0, startingHealth);
-            healthBar.SetHealth(currentHealth);
+        if (isDead) return;
 
-            if (currentHealth <= 0 && !isDead)
-            {
-                anim.SetTrigger("die");
-                isDead = true;
-            }
-            else
-            {
-                anim.SetTrigger("hurt");
-            }
+        currentHealth = Mathf.Clamp(currentHealth - _damage, 0, startingHealth);
+        healthBar.SetHealth(currentHealth);
+
+        if (currentHealth <= 0 && !isDead)
+        {
+            anim.SetTrigger("die");
+            isDead = true;
         }
+        else
+        {
+            if (!isHurting)
+                StartCoroutine(HurtRoutine());
+        }
+    }
+
+    private IEnumerator HurtRoutine()
+    {
+        isHurting = true;
+        anim.SetTrigger("hurt");
+        yield return new WaitForSeconds(hurtAnimDuration);
+        isHurting = false;
     }
 }

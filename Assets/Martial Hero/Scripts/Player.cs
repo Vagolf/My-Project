@@ -13,9 +13,18 @@ public class Player : MonoBehaviour
 
     //now it's can't dash, but you can add it back if you want
     [Header("Dash Settings")]
+    /**
+    [SerializeField] private float dashPower = 25f;
+    [SerializeField] private int dashCounter = 0;
+    [SerializeField] private float dashTime = 0.2f;
+    [SerializeField] private float dashCooldown = 2f;
+    */
+
     [SerializeField] private float dashPower = 5f;
     [SerializeField] private float dashTime = 0.1f;
     [SerializeField] private float dashCooldown = 2f;
+    private bool canDash = true;
+    private bool isDashing = false;
 
     [Header("Sound")]
     [SerializeField] private AudioSource jumpSoundEffect;
@@ -56,6 +65,10 @@ public class Player : MonoBehaviour
     {
         // Move left-right
         horizontalInput = Input.GetAxis("Horizontal");
+
+        //dash check
+        if (isDashing)
+            return;
 
         // Crouch (S)
         if (Input.GetKey(KeyCode.S) && IsGrounded())
@@ -104,6 +117,11 @@ public class Player : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown(KeyCode.L)) //!ground && dashCounter < 1 && Input.GetKeyDown(KeyCode.L) && horizontalInput != 0
+        {
+            StartCoroutine(Dash());
+        }
+
         // Flip player (A, D)
         if (horizontalInput > 0.01f)
             transform.localScale = new Vector3(10, 10, 1);
@@ -141,9 +159,49 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ground")
         {
+            //dashCounter = 0; // Reset dash counter when touching the ground
             ground = true;
         }
 
+    }
+
+    // Dash functionality (optional, can be removed if not needed) 21-6-68
+    /**
+    private void Dash()
+    {
+        dashCounter++;
+        body.constraints |= RigidbodyConstraints2D.FreezePositionY; // Freeze all movement
+        Vector2 dashDirection = new Vector2(horizontalInput, 0).normalized; // Dash direction based on facing
+        body.velocity = dashDirection * dashPower;
+        tr.emitting = true; // Start trail effect
+        Invoke("enbleCharacterMovement", dashTime); // Unfreeze after dash time     
+    }
+    private void enbleCharacterMovement()
+    {
+        body.constraints &= ~RigidbodyConstraints2D.FreezePositionY; // Unfreeze vertical movement
+        tr.emitting = false; // Stop trail effect
+    }
+    **/
+
+    //Dash
+    private IEnumerator Dash()
+    {
+        canDash = false;
+        isDashing = true;
+        float originalGravity = body.gravityScale;
+        body.gravityScale = 0;
+        Vector3 dashPosition = transform.position + new Vector3(transform.localScale.x * dashPower, 0f, 0f);
+        transform.position = dashPosition;
+        Debug.Log("Dash posi: " + transform.position);
+        tr.emitting = true;
+        yield return new WaitForSeconds(dashTime);
+        Debug.Log("Dash");
+        tr.emitting = false;
+        body.gravityScale = originalGravity;
+        isDashing = false;
+        yield return new WaitForSeconds(dashCooldown);
+        Debug.Log("CanDash");
+        canDash = true;
     }
 
     public void StopAttackAnimation()
