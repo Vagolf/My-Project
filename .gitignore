@@ -1,0 +1,72 @@
+# Unity (official style)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# JetBrains Rider / plugins
+[Aa]ssets/Plugins/Editor/JetBrains*
+
+# IDE caches
+.vs/
+.vscode/
+.idea/
+.gradle/
+.consulo/
+
+# Auto-generated VS/Unity files
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Addressables packed bins
+[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Android auto-generated streaming assets
+[Aa]ssets/[Ss]treamingAssets/aa.meta
+[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Python venv (if you use it)
+venv/
+
+# ===== Your Project Custom =====
+# Build / Export folder (สำคัญมาก ไม่ให้ไฟล์ใหญ่หลุดไป)
+App/
+
+# Big archives
+*.rar
+*.zip
+
+# Unity build residues (ไฟล์ใหญ่มาก)
+*.resS

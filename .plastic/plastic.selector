@@ -1,0 +1,4 @@
+repository "FightingRevenge1/FightingRevenge@18967350743986@cloud"
+  path "/"
+    br "/main"
+    co "/main"
