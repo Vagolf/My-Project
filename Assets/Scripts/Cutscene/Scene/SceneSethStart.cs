@@ -19,8 +19,6 @@ public class SceneSethStart : MonoBehaviour
     [SerializeField] int eventPos = 0;
     [SerializeField] GameObject charName;
 
-    [SerializeField] GameObject videoOpen;
-
     private void Update()
     {
         textLength = TextCreater.charCount;
@@ -35,11 +33,6 @@ public class SceneSethStart : MonoBehaviour
     // Update is called once per frame
     IEnumerator EvenStart()
     {
-        //Open video Show flashback of Kaisa
-        videoOpen.SetActive(true);
-        yield return new WaitForSeconds(5f);
-        videoOpen.SetActive(false);
-
         //Fade in scene
         Fadescene.SetActive(true);
         yield return new WaitForSeconds(2f);

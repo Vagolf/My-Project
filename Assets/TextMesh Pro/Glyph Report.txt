@@ -1,0 +1,53 @@
+Font: K2D  Style: Regular
+Point Size: 89   SP/PD Ratio: 0.0%
+
+Characters included: 87/128
+Missing characters: 41
+Excluded characters: 0
+
+Characters missing from font file:
+----------------------------------------
+ID: 3584	Hex: E00	Char [฀]
+ID: 3643	Hex: E3B	Char [฻]
+ID: 3644	Hex: E3C	Char [฼]
+ID: 3645	Hex: E3D	Char [฽]
+ID: 3646	Hex: E3E	Char [฾]
+ID: 3676	Hex: E5C	Char [๜]
+ID: 3677	Hex: E5D	Char [๝]
+ID: 3678	Hex: E5E	Char [๞]
+ID: 3679	Hex: E5F	Char [๟]
+ID: 3680	Hex: E60	Char [๠]
+ID: 3681	Hex: E61	Char [๡]
+ID: 3682	Hex: E62	Char [๢]
+ID: 3683	Hex: E63	Char [๣]
+ID: 3684	Hex: E64	Char [๤]
+ID: 3685	Hex: E65	Char [๥]
+ID: 3686	Hex: E66	Char [๦]
+ID: 3687	Hex: E67	Char [๧]
+ID: 3688	Hex: E68	Char [๨]
+ID: 3689	Hex: E69	Char [๩]
+ID: 3690	Hex: E6A	Char [๪]
+ID: 3691	Hex: E6B	Char [๫]
+ID: 3692	Hex: E6C	Char [๬]
+ID: 3693	Hex: E6D	Char [๭]
+ID: 3694	Hex: E6E	Char [๮]
+ID: 3695	Hex: E6F	Char [๯]
+ID: 3696	Hex: E70	Char [๰]
+ID: 3697	Hex: E71	Char [๱]
+ID: 3698	Hex: E72	Char [๲]
+ID: 3699	Hex: E73	Char [๳]
+ID: 3700	Hex: E74	Char [๴]
+ID: 3701	Hex: E75	Char [๵]
+ID: 3702	Hex: E76	Char [๶]
+ID: 3703	Hex: E77	Char [๷]
+ID: 3704	Hex: E78	Char [๸]
+ID: 3705	Hex: E79	Char [๹]
+ID: 3706	Hex: E7A	Char [๺]
+ID: 3707	Hex: E7B	Char [๻]
+ID: 3708	Hex: E7C	Char [๼]
+ID: 3709	Hex: E7D	Char [๽]
+ID: 3710	Hex: E7E	Char [๾]
+ID: 3711	Hex: E7F	Char [๿]
+
+Characters excluded from packing:
+----------------------------------------
