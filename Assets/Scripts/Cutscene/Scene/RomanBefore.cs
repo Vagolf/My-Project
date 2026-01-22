@@ -6,110 +6,200 @@ using UnityEngine.EventSystems;
 public class RomanBefore : MonoBehaviour
 {
     public GameObject Fadescene;
+
+    [Header("Characters (ตัวละคร)")]
     public GameObject ChaRoman;
     public GameObject ChKaisa;
-    public GameObject textBox;
+
+    [Header("Dialogue UI")]
+    public GameObject mainTextObject;
+    public GameObject nextBotton;
+
+    public GameObject textBox;                 // กล่องข้อความ (มี TMP_Text)
     public TMP_FontAsset thaiFont;
 
-    [SerializeField] string textToSpeak;
-    [SerializeField] int currentTextLength;
-    [SerializeField] int textLength;
-    [SerializeField] GameObject mainTextObject;
+    [Header("Name Objects (วางคนละตำแหน่ง)")]
+    public GameObject RomanNameObj;            // ✅ ชื่อ Roman (Object แยก)
+    public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
+    [SerializeField] private string romanName = "Roman";
+    [SerializeField] private string kaisaName = "Kaisa";
 
-    [SerializeField] GameObject nextBotton;
-    [SerializeField] int eventPos = 0;
-    [SerializeField] GameObject charName;
+    [Header("Cutscene State")]
+    [SerializeField] public int eventPos = 0;
 
-    // ✅ ตัวควบคุมพิมพ์ข้อความ
+    // Text typing
     private TextCreater textCreater;
+    private TMP_Text textTMP;
+
+    [SerializeField] private int currentTextLength;
+    [SerializeField] private int textLength;
+
+    private int lineIndex = -1;
+    private bool isPlayingLine = false;
+
+    private enum Speaker { Roman, Kaisa }
+
+    private Speaker[] speakers;
+    private string[] lines;
 
     private void Update()
     {
         textLength = TextCreater.charCount;
     }
 
-    void Start()
+    private void Start()
     {
-        // ✅ ใส่ฟอนต์ไทย
-        textBox.GetComponent<TMP_Text>().font = thaiFont;
-        charName.GetComponent<TMP_Text>().font = thaiFont;
+        // TMP text
+        textTMP = textBox.GetComponent<TMP_Text>();
+        textTMP.font = thaiFont;
 
-        // ✅ ดึง TextCreater จาก textBox แล้วตั้งค่าความเร็ว/ปุ่มเร่ง
+        // TextCreater speed
         textCreater = textBox.GetComponent<TextCreater>();
         if (textCreater != null)
         {
-            textCreater.normalDelay = 0.01f;      // ปกติ
-            textCreater.fastDelay = 0.002f;       // เร็วตอนกดค้าง
-            textCreater.speedKey = KeyCode.LeftShift; // ✅ ใช้ Shift แทน Space (กันไปกด Next)
+            textCreater.normalDelay = 0.1f;
+            textCreater.speedKey = KeyCode.LeftShift;
         }
 
-        StartCoroutine(EvenStart());
+        // ✅ ปิดชื่อทั้งสองก่อน
+        if (RomanNameObj != null) RomanNameObj.SetActive(false);
+        if (KaisaNameObj != null) KaisaNameObj.SetActive(false);
+
+        // ✅ บทพูด
+        speakers = new Speaker[]
+        {
+            Speaker.Kaisa,
+            Speaker.Roman,
+            Speaker.Kaisa,
+            Speaker.Roman,
+            Speaker.Kaisa,
+            Speaker.Kaisa
+        };
+
+        lines = new string[]
+        {
+            "นายเกี่ยวอะไรกับคนที่เผาบ้านฉัน",
+            "ข้าคือโรมัน… ผู้รับใช้ของเขา",
+            "งั้นบอกมาว่าเขาอยู่ไหน",
+            "นายของข้ารู้ว่าเธอจะตามมา",
+            "ถ้าขวาง… ก็ต้องล้ม",
+            "เข้ามาสิ นักดาบคู่"
+        };
+
+        StartCoroutine(CutsceneStart());
     }
 
-    IEnumerator EvenStart()
+    private IEnumerator CutsceneStart()
     {
-        //Fade in scene
+        // มุมกว้างตอนเริ่ม
+        eventPos = 0;
+
         Fadescene.SetActive(true);
         yield return new WaitForSeconds(2f);
         Fadescene.SetActive(false);
 
-        //Set characters
         ChaRoman.SetActive(true);
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.5f);
         ChKaisa.SetActive(true);
 
-        //Talk start
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.8f);
         mainTextObject.SetActive(true);
 
-        charName.GetComponent<TMP_Text>().text = "Roman";
-        textToSpeak = "กากยdddddddddddddddddd d          dddddddd wdwdwนย";
-        textBox.GetComponent<TMP_Text>().text = textToSpeak;
-
-        currentTextLength = textToSpeak.Length;
-        TextCreater.runText = true;
-
-        yield return new WaitUntil(() => textLength == currentTextLength);
-
-        yield return new WaitForSeconds(0.3f);
-
-        nextBotton.SetActive(true);
-        eventPos = 1;
-
-        // ✅ กันปุ่ม Next ถูกเลือกอัตโนมัติ (Space/Enter จะไม่กด Next เอง)
-        if (EventSystem.current != null)
-            EventSystem.current.SetSelectedGameObject(null);
-    }
-
-    IEnumerator EventOne()
-    {
-        nextBotton.SetActive(false);
-        yield return new WaitForSeconds(0.5f);
-
-        charName.GetComponent<TMP_Text>().text = "Kaisa";
-        textToSpeak = "I already know but I'll keep doing it.";
-        textBox.GetComponent<TMP_Text>().text = textToSpeak;
-
-        currentTextLength = textToSpeak.Length;
-        TextCreater.runText = true;
-
-        yield return new WaitUntil(() => textLength == currentTextLength);
-
-        yield return new WaitForSeconds(0.3f);
-
-        nextBotton.SetActive(true);
-        eventPos = 2;
-
-        // ✅ กันกด Next เองด้วย Space/Enter
-        if (EventSystem.current != null)
-            EventSystem.current.SetSelectedGameObject(null);
+        PlayNextLine();
     }
 
     public void NextBotton()
     {
-        if (eventPos == 1)
+        if (isPlayingLine) return;
+        PlayNextLine();
+    }
+
+    private void PlayNextLine()
+    {
+        lineIndex++;
+
+        // ✅ จบคัทซีน
+        if (lineIndex >= lines.Length)
         {
-            StartCoroutine(EventOne());
+            eventPos = 0;
+            if (nextBotton != null) nextBotton.SetActive(false);
+
+            // ปิดชื่อทั้งหมด
+            ShowName(null);
+            return;
+        }
+
+        StartCoroutine(PlayLine(lineIndex));
+    }
+
+    private IEnumerator PlayLine(int idx)
+    {
+        isPlayingLine = true;
+        if (nextBotton != null) nextBotton.SetActive(false);
+
+        // ✅ เปิดชื่อคนพูด (วางแยกตำแหน่งได้เลย)
+        ShowName(speakers[idx]);
+
+        // ✅ เปลี่ยน eventPos ให้กล้องซูมตามเงื่อนไข
+        // Roman = เลขคี่ / Kaisa = เลขคู่
+        eventPos = (speakers[idx] == Speaker.Roman) ? (idx * 2 + 1) : (idx * 2 + 2);
+
+        // set text
+        string textToSpeak = lines[idx];
+        textTMP.text = textToSpeak;
+
+        currentTextLength = textToSpeak.Length;
+        TextCreater.runText = true;
+
+        yield return new WaitUntil(() => textLength == currentTextLength);
+        yield return new WaitForSeconds(0.2f);
+
+        if (nextBotton != null) nextBotton.SetActive(true);
+
+        // กันปุ่มถูกเลือกอัตโนมัติ
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+
+        isPlayingLine = false;
+    }
+
+    // ==========================
+    // ✅ แสดงชื่อแบบแยก 2 Object
+    // ==========================
+    private void ShowName(Speaker? who)
+    {
+        if (RomanNameObj != null) RomanNameObj.SetActive(false);
+        if (KaisaNameObj != null) KaisaNameObj.SetActive(false);
+
+        if (who == null) return;
+
+        if (who == Speaker.Roman)
+        {
+            if (RomanNameObj != null)
+            {
+                RomanNameObj.SetActive(true);
+                SetNameText(RomanNameObj, romanName);
+            }
+        }
+        else
+        {
+            if (KaisaNameObj != null)
+            {
+                KaisaNameObj.SetActive(true);
+                SetNameText(KaisaNameObj, kaisaName);
+            }
+        }
+    }
+
+    private void SetNameText(GameObject nameObj, string name)
+    {
+        // รองรับ TMP_Text อยู่ใน Object หรืออยู่ในลูก
+        var tmp = nameObj.GetComponent<TMP_Text>();
+        if (tmp == null) tmp = nameObj.GetComponentInChildren<TMP_Text>();
+        if (tmp != null)
+        {
+            tmp.font = thaiFont;
+            tmp.text = name;
         }
     }
 }
