@@ -48,10 +48,11 @@ public class RomanBefore : MonoBehaviour
     private Speaker[] speakers;
     private string[] lines;
 
-    [Header("Next Scene")]
-    [SerializeField] private string nextSceneName = "NextScene"; // ✅ ใส่ชื่อ Scene ถัดไปตรงนี้
-    [SerializeField] private float endHoldSeconds = 1.0f;        // ✅ หน่วงก่อน Fade ออก
-    [SerializeField] private float fadeDuration = 1.2f;          // ✅ ระยะเวลา Fade
+    [Header("Cutscene Animators")]
+    public EnemyCutscene enemyCutscene;
+    public PlayerCutscene kaisaCutscene;
+    public textShow textShowScript;
+
 
     private void Update()
     {
@@ -99,7 +100,6 @@ public class RomanBefore : MonoBehaviour
 
         StartCoroutine(CutsceneStart());
 
-
     }
     private IEnumerator CutsceneStart()
     {
@@ -111,7 +111,7 @@ public class RomanBefore : MonoBehaviour
         Fadescene.SetActive(false);
 
         ChEnemy.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2.5f);
         ChKaisa.SetActive(true);
 
         yield return new WaitForSeconds(3f);
@@ -119,12 +119,6 @@ public class RomanBefore : MonoBehaviour
 
         PlayNextLine();
 
-        if(isLastLine) { 
-            Fadescene.SetActive(false);
-            yield return new WaitForSeconds(2f);
-            Fadescene.SetActive(true);
-        };
-        
     }
 
     public void NextBotton()
@@ -143,6 +137,13 @@ public class RomanBefore : MonoBehaviour
         {
             eventPos = 0;
             BgScreen.SetActive(false);
+
+            if (enemyCutscene != null) enemyCutscene.isFade = true;
+            if (kaisaCutscene != null) kaisaCutscene.isFade = true;
+            if (textShowScript != null) textShowScript.isAction = true;
+
+
+
             if (ChEnemyTalk) ChEnemyTalk.SetActive(true);
             if (ChKaisaTalk) ChKaisaTalk.SetActive(true);
 
@@ -150,6 +151,9 @@ public class RomanBefore : MonoBehaviour
 
             if (nextBotton != null) nextBotton.SetActive(false);
             ShowName(null);
+            StartCoroutine(EndCutsceneFade());
+            
+
             return;
         }
 
@@ -160,6 +164,8 @@ public class RomanBefore : MonoBehaviour
         // ✅ สลับตัวละคร “คนพูด = Talk” / “อีกคน = ปกติ”
         if (who == Speaker.Kaisa)
         {
+            if (kaisaCutscene != null) kaisaCutscene.isTalking = true;
+
             ChKaisa.SetActive(false);
             ChKaisaTalk.SetActive(true);
 
@@ -168,6 +174,7 @@ public class RomanBefore : MonoBehaviour
         }
         else // Enemy
         {
+            if (enemyCutscene != null) enemyCutscene.isTalking = true;
             ChEnemy.SetActive(false);
             ChEnemyTalk.SetActive(true);
 
@@ -176,6 +183,7 @@ public class RomanBefore : MonoBehaviour
         }
 
         StartCoroutine(PlayLine(lineIndex));
+
     }
 
 
@@ -188,7 +196,6 @@ public class RomanBefore : MonoBehaviour
         ShowName(speakers[idx]);
 
         // ✅ เปลี่ยน eventPos ให้กล้องซูมตามเงื่อนไข
-        // Roman = เลขคี่ / Kaisa = เลขคู่
         eventPos = (speakers[idx] == Speaker.Enemy) ? (idx * 2 + 1) : (idx * 2 + 2);
 
         // set text
@@ -201,6 +208,8 @@ public class RomanBefore : MonoBehaviour
         yield return new WaitUntil(() => textLength == currentTextLength);
         yield return new WaitForSeconds(0.2f);
 
+        if (enemyCutscene != null) enemyCutscene.isTalking = false;
+        if (kaisaCutscene != null) kaisaCutscene.isTalking = false;
         if (nextBotton != null) nextBotton.SetActive(true);
 
         // กันปุ่มถูกเลือกอัตโนมัติ
@@ -250,4 +259,12 @@ public class RomanBefore : MonoBehaviour
         }
     }
 
+    private IEnumerator EndCutsceneFade()
+    {
+        Fadescene.SetActive(true);
+        yield return new WaitForSeconds(1f);
+        Fadescene.SetActive(false);
+    }
 }
+
+
