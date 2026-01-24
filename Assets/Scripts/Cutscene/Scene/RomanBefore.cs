@@ -1,15 +1,20 @@
 ﻿using System.Collections;
-using UnityEngine;
+using System.Threading;
 using TMPro;
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class RomanBefore : MonoBehaviour
 {
     public GameObject Fadescene;
+    public GameObject BgScreen;
 
-    [Header("Characters (ตัวละคร)")]
-    public GameObject ChaRoman;
+    [Header("Characters")]
+    public GameObject ChEnemy;
     public GameObject ChKaisa;
+    public GameObject ChEnemyTalk;
+    public GameObject ChKaisaTalk;
 
     [Header("Dialogue UI")]
     public GameObject mainTextObject;
@@ -18,10 +23,10 @@ public class RomanBefore : MonoBehaviour
     public GameObject textBox;                 // กล่องข้อความ (มี TMP_Text)
     public TMP_FontAsset thaiFont;
 
-    [Header("Name Objects (วางคนละตำแหน่ง)")]
-    public GameObject RomanNameObj;            // ✅ ชื่อ Roman (Object แยก)
+    [Header("Name Objects")]
+    public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string romanName = "Roman";
+    [SerializeField] private string enemyName = "Roman";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
@@ -36,11 +41,17 @@ public class RomanBefore : MonoBehaviour
 
     private int lineIndex = -1;
     private bool isPlayingLine = false;
+    bool isLastLine;
 
-    private enum Speaker { Roman, Kaisa }
+    private enum Speaker { Enemy, Kaisa }
 
     private Speaker[] speakers;
     private string[] lines;
+
+    [Header("Next Scene")]
+    [SerializeField] private string nextSceneName = "NextScene"; // ✅ ใส่ชื่อ Scene ถัดไปตรงนี้
+    [SerializeField] private float endHoldSeconds = 1.0f;        // ✅ หน่วงก่อน Fade ออก
+    [SerializeField] private float fadeDuration = 1.2f;          // ✅ ระยะเวลา Fade
 
     private void Update()
     {
@@ -62,18 +73,18 @@ public class RomanBefore : MonoBehaviour
         }
 
         // ✅ ปิดชื่อทั้งสองก่อน
-        if (RomanNameObj != null) RomanNameObj.SetActive(false);
+        if (EnemyNameObj != null) EnemyNameObj.SetActive(false);
         if (KaisaNameObj != null) KaisaNameObj.SetActive(false);
 
         // ✅ บทพูด
         speakers = new Speaker[]
         {
             Speaker.Kaisa,
-            Speaker.Roman,
+            Speaker.Enemy,
             Speaker.Kaisa,
-            Speaker.Roman,
+            Speaker.Enemy,
             Speaker.Kaisa,
-            Speaker.Kaisa
+            Speaker.Enemy
         };
 
         lines = new string[]
@@ -87,8 +98,9 @@ public class RomanBefore : MonoBehaviour
         };
 
         StartCoroutine(CutsceneStart());
-    }
 
+
+    }
     private IEnumerator CutsceneStart()
     {
         // มุมกว้างตอนเริ่ม
@@ -98,14 +110,21 @@ public class RomanBefore : MonoBehaviour
         yield return new WaitForSeconds(2f);
         Fadescene.SetActive(false);
 
-        ChaRoman.SetActive(true);
+        ChEnemy.SetActive(true);
         yield return new WaitForSeconds(1.5f);
         ChKaisa.SetActive(true);
 
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(3f);
         mainTextObject.SetActive(true);
 
         PlayNextLine();
+
+        if(isLastLine) { 
+            Fadescene.SetActive(false);
+            yield return new WaitForSeconds(2f);
+            Fadescene.SetActive(true);
+        };
+        
     }
 
     public void NextBotton()
@@ -118,19 +137,47 @@ public class RomanBefore : MonoBehaviour
     {
         lineIndex++;
 
+
         // ✅ จบคัทซีน
         if (lineIndex >= lines.Length)
         {
             eventPos = 0;
-            if (nextBotton != null) nextBotton.SetActive(false);
+            BgScreen.SetActive(false);
+            if (ChEnemyTalk) ChEnemyTalk.SetActive(true);
+            if (ChKaisaTalk) ChKaisaTalk.SetActive(true);
 
-            // ปิดชื่อทั้งหมด
+            mainTextObject.SetActive(false);
+
+            if (nextBotton != null) nextBotton.SetActive(false);
             ShowName(null);
             return;
         }
 
+        // ✅ ต้องเอาคนพูดจริงๆ จาก array
+        Speaker who = speakers[lineIndex];
+        BgScreen.SetActive(true);
+
+        // ✅ สลับตัวละคร “คนพูด = Talk” / “อีกคน = ปกติ”
+        if (who == Speaker.Kaisa)
+        {
+            ChKaisa.SetActive(false);
+            ChKaisaTalk.SetActive(true);
+
+            ChEnemy.SetActive(false);
+            ChEnemyTalk.SetActive(false);
+        }
+        else // Enemy
+        {
+            ChEnemy.SetActive(false);
+            ChEnemyTalk.SetActive(true);
+
+            ChKaisa.SetActive(false);
+            ChKaisaTalk.SetActive(false);
+        }
+
         StartCoroutine(PlayLine(lineIndex));
     }
+
 
     private IEnumerator PlayLine(int idx)
     {
@@ -142,7 +189,7 @@ public class RomanBefore : MonoBehaviour
 
         // ✅ เปลี่ยน eventPos ให้กล้องซูมตามเงื่อนไข
         // Roman = เลขคี่ / Kaisa = เลขคู่
-        eventPos = (speakers[idx] == Speaker.Roman) ? (idx * 2 + 1) : (idx * 2 + 2);
+        eventPos = (speakers[idx] == Speaker.Enemy) ? (idx * 2 + 1) : (idx * 2 + 2);
 
         // set text
         string textToSpeak = lines[idx];
@@ -168,17 +215,17 @@ public class RomanBefore : MonoBehaviour
     // ==========================
     private void ShowName(Speaker? who)
     {
-        if (RomanNameObj != null) RomanNameObj.SetActive(false);
+        if (EnemyNameObj != null) EnemyNameObj.SetActive(false);
         if (KaisaNameObj != null) KaisaNameObj.SetActive(false);
 
         if (who == null) return;
 
-        if (who == Speaker.Roman)
+        if (who == Speaker.Enemy)
         {
-            if (RomanNameObj != null)
+            if (EnemyNameObj != null)
             {
-                RomanNameObj.SetActive(true);
-                SetNameText(RomanNameObj, romanName);
+                EnemyNameObj.SetActive(true);
+                SetNameText(EnemyNameObj, enemyName);
             }
         }
         else
@@ -202,4 +249,5 @@ public class RomanBefore : MonoBehaviour
             tmp.text = name;
         }
     }
+
 }
