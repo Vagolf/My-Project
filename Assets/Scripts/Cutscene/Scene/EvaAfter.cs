@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public class RomanAfter : MonoBehaviour
+public class EvaAfter : MonoBehaviour
 {
     public GameObject Fadescene;
     public GameObject BgScreen;
@@ -24,7 +24,7 @@ public class RomanAfter : MonoBehaviour
     [Header("Name Objects")]
     public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string enemyName = "Roman";
+    [SerializeField] private string enemyName = "Eva";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
@@ -257,8 +257,6 @@ public class RomanAfter : MonoBehaviour
         Fadescene.SetActive(false);
         yield return new WaitForSeconds(0.5f);
         enemyCutscene.Die();
-        yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("EvaBefore");
     }
 }
 

@@ -5,12 +5,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public class RomanAfter : MonoBehaviour
+public class EvaBefore : MonoBehaviour
 {
     public GameObject Fadescene;
     public GameObject BgScreen;
 
     [Header("Characters")]
+    public GameObject ChEnemy;
+    public GameObject ChKaisa;
     public GameObject ChEnemyTalk;
     public GameObject ChKaisaTalk;
 
@@ -24,7 +26,7 @@ public class RomanAfter : MonoBehaviour
     [Header("Name Objects")]
     public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string enemyName = "Roman";
+    [SerializeField] private string enemyName = "Eva";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
@@ -50,7 +52,7 @@ public class RomanAfter : MonoBehaviour
     public EnemyCutscene enemyCutscene;
     public PlayerCutscene kaisaCutscene;
 
-    //public GameObject textShow;
+    public GameObject textShow;
 
 
     private void Update()
@@ -89,12 +91,12 @@ public class RomanAfter : MonoBehaviour
 
         lines = new string[]
         {
-            "ตอบมา… ใครเป็นคนสั่ง!",
-            "เธอกำลังเดินไปสู่ความจริงที่ไม่อยากรู้…",
-            "ความจริงอะไร!",
-            "ครอบครัวของเธอ… ไม่ใช่เหยื่อ",
-            "...",
-            "แต่เป็นส่วนหนึ่งของมัน…"
+            "นายเกี่ยวอะไรกับคนที่เผาบ้านฉัน",
+            "ข้าคือโรมัน… ผู้รับใช้ของเขา",
+            "งั้นบอกมาว่าเขาอยู่ไหน",
+            "นายของข้ารู้ว่าเธอจะตามมา",
+            "ถ้าขวาง… ก็ต้องล้ม",
+            "เข้ามาสิ นักดาบคู่"
         };
 
         StartCoroutine(CutsceneStart());
@@ -104,14 +106,16 @@ public class RomanAfter : MonoBehaviour
     {
         // มุมกว้างตอนเริ่ม
         eventPos = 0;
-        ChEnemyTalk.SetActive(true);
-        ChKaisaTalk.SetActive(true);
 
         Fadescene.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2f);
         Fadescene.SetActive(false);
 
-        yield return new WaitForSeconds(1f);
+        ChEnemy.SetActive(true);
+        yield return new WaitForSeconds(2.5f);
+        ChKaisa.SetActive(true);
+
+        yield return new WaitForSeconds(3f);
         mainTextObject.SetActive(true);
 
         PlayNextLine();
@@ -135,18 +139,21 @@ public class RomanAfter : MonoBehaviour
             eventPos = 0;
             BgScreen.SetActive(false);
 
-            //if (textShow != null) textShow.SetActive(true);
+            if (enemyCutscene != null) enemyCutscene.isFade = true;
+            if (kaisaCutscene != null) kaisaCutscene.isFade = true;
+            if (textShow != null) textShow.SetActive(true);
+
+
 
             if (ChEnemyTalk) ChEnemyTalk.SetActive(true);
-            
             if (ChKaisaTalk) ChKaisaTalk.SetActive(true);
+
             mainTextObject.SetActive(false);
-            StartCoroutine(EndCutsceneFade());
 
-
-            
             if (nextBotton != null) nextBotton.SetActive(false);
             ShowName(null);
+            StartCoroutine(EndCutsceneFade());
+            
 
             return;
         }
@@ -160,16 +167,19 @@ public class RomanAfter : MonoBehaviour
         {
             if (kaisaCutscene != null) kaisaCutscene.isTalking = true;
 
+            ChKaisa.SetActive(false);
             ChKaisaTalk.SetActive(true);
 
+            ChEnemy.SetActive(false);
             ChEnemyTalk.SetActive(false);
         }
         else // Enemy
         {
             if (enemyCutscene != null) enemyCutscene.isTalking = true;
-
+            ChEnemy.SetActive(false);
             ChEnemyTalk.SetActive(true);
 
+            ChKaisa.SetActive(false);
             ChKaisaTalk.SetActive(false);
         }
 
@@ -253,12 +263,8 @@ public class RomanAfter : MonoBehaviour
     private IEnumerator EndCutsceneFade()
     {
         Fadescene.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
         Fadescene.SetActive(false);
-        yield return new WaitForSeconds(0.5f);
-        enemyCutscene.Die();
-        yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("EvaBefore");
     }
 }
 

@@ -26,7 +26,7 @@ public class RomanBefore : MonoBehaviour
     [Header("Name Objects")]
     public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string enemyName = "Roman";
+    [SerializeField] private string enemyName = "Eva";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
