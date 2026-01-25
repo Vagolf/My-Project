@@ -4,6 +4,7 @@
 [RequireComponent(typeof(Animator))]
 public class EnemyCutscene : MonoBehaviour
 {
+    public GameObject enemy;
     private Animator anim;
     public bool isTalking = false;
     public bool isFade = false;
@@ -17,5 +18,14 @@ public class EnemyCutscene : MonoBehaviour
     {
         anim.SetBool("talking", isTalking);
         anim.SetBool("fadeIn", isFade);
+        
     }
+    public void Die() {
+        anim.SetTrigger("die");
+    }
+
+    public void unActive() {
+        enemy.SetActive(false);
+    }
+
 }
