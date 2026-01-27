@@ -24,7 +24,7 @@ public class EvaAfter : MonoBehaviour
     [Header("Name Objects")]
     public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string enemyName = "Eva";
+    [SerializeField] private string enemyName = "Roman";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
@@ -138,13 +138,13 @@ public class EvaAfter : MonoBehaviour
             //if (textShow != null) textShow.SetActive(true);
 
             if (ChEnemyTalk) ChEnemyTalk.SetActive(true);
-            
+
             if (ChKaisaTalk) ChKaisaTalk.SetActive(true);
             mainTextObject.SetActive(false);
             StartCoroutine(EndCutsceneFade());
 
 
-            
+
             if (nextBotton != null) nextBotton.SetActive(false);
             ShowName(null);
 
@@ -257,7 +257,7 @@ public class EvaAfter : MonoBehaviour
         Fadescene.SetActive(false);
         yield return new WaitForSeconds(0.5f);
         enemyCutscene.Die();
+        yield return new WaitForSeconds(3f);
+        SceneManager.LoadScene("EvaBefore");
     }
 }
-
-
