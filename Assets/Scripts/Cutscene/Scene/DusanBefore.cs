@@ -5,12 +5,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public class EvaAfter : MonoBehaviour
+public class DusanBefore : MonoBehaviour
 {
     public GameObject Fadescene;
     public GameObject BgScreen;
 
     [Header("Characters")]
+    public GameObject ChEnemy;
+    public GameObject ChKaisa;
     public GameObject ChEnemyTalk;
     public GameObject ChKaisaTalk;
 
@@ -24,7 +26,7 @@ public class EvaAfter : MonoBehaviour
     [Header("Name Objects")]
     public GameObject EnemyNameObj;            // ✅ ชื่อ Roman (Object แยก)
     public GameObject KaisaNameObj;            // ✅ ชื่อ Kaisa (Object แยก)
-    [SerializeField] private string enemyName = "Roman";
+    [SerializeField] private string enemyName = "Eva";
     [SerializeField] private string kaisaName = "Kaisa";
 
     [Header("Cutscene State")]
@@ -50,7 +52,7 @@ public class EvaAfter : MonoBehaviour
     public EnemyCutscene enemyCutscene;
     public PlayerCutscene kaisaCutscene;
 
-    //public GameObject textShow;
+    public GameObject textShow;
 
 
     private void Update()
@@ -84,25 +86,17 @@ public class EvaAfter : MonoBehaviour
             Speaker.Kaisa,
             Speaker.Enemy,
             Speaker.Kaisa,
-            Speaker.Enemy,
-            Speaker.Kaisa,
-            Speaker.Enemy,
-            Speaker.Kaisa,
             Speaker.Enemy
         };
 
         lines = new string[]
         {
-            "ดี… งั้นก็ลองฝ่าพายุของฉันดู",
-            "เธอไม่สงสัยเหรอ…",
-            "สงสัยอะไร",
-            "ว่าทำไมเธอถึงเก่งกว่าคนทั่วไป",
-            "...",
-            "พลังนั้น… มาจากพ่อแม่เธอเอง",
-            "พูดอะไรของเธอ!",
-            "นายของฉันรออยู่…",
-            "แล้วเขาคือใคร!",
-            "คนที่เธอรู้จักดีที่สุด…"
+            "นายคือคนที่เผาบ้านฉัน",
+            "ใช่… ข้าเป็นคนทำเอง",
+            "งั้นก็จบกันตรงนี้!",
+            "ความแค้นพาเธอมาถึงจริงๆ",
+            "ฉันจะฆ่านาย!",
+            "ถ้างั้น… ก็พิสูจน์ให้เห็นสิ"
         };
 
         StartCoroutine(CutsceneStart());
@@ -112,14 +106,16 @@ public class EvaAfter : MonoBehaviour
     {
         // มุมกว้างตอนเริ่ม
         eventPos = 0;
-        ChEnemyTalk.SetActive(true);
-        ChKaisaTalk.SetActive(true);
 
         Fadescene.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2f);
         Fadescene.SetActive(false);
 
-        yield return new WaitForSeconds(1f);
+        ChEnemy.SetActive(true);
+        yield return new WaitForSeconds(2.5f);
+        ChKaisa.SetActive(true);
+
+        yield return new WaitForSeconds(3f);
         mainTextObject.SetActive(true);
 
         PlayNextLine();
@@ -143,18 +139,21 @@ public class EvaAfter : MonoBehaviour
             eventPos = 0;
             BgScreen.SetActive(false);
 
-            //if (textShow != null) textShow.SetActive(true);
+            if (enemyCutscene != null) enemyCutscene.isFade = true;
+            if (kaisaCutscene != null) kaisaCutscene.isFade = true;
+            if (textShow != null) textShow.SetActive(true);
+
+
 
             if (ChEnemyTalk) ChEnemyTalk.SetActive(true);
-
             if (ChKaisaTalk) ChKaisaTalk.SetActive(true);
+
             mainTextObject.SetActive(false);
-            StartCoroutine(EndCutsceneFade());
-
-
 
             if (nextBotton != null) nextBotton.SetActive(false);
             ShowName(null);
+            StartCoroutine(EndCutsceneFade());
+            
 
             return;
         }
@@ -168,16 +167,19 @@ public class EvaAfter : MonoBehaviour
         {
             if (kaisaCutscene != null) kaisaCutscene.isTalking = true;
 
+            ChKaisa.SetActive(false);
             ChKaisaTalk.SetActive(true);
 
+            ChEnemy.SetActive(false);
             ChEnemyTalk.SetActive(false);
         }
         else // Enemy
         {
             if (enemyCutscene != null) enemyCutscene.isTalking = true;
-
+            ChEnemy.SetActive(false);
             ChEnemyTalk.SetActive(true);
 
+            ChKaisa.SetActive(false);
             ChKaisaTalk.SetActive(false);
         }
 
@@ -261,11 +263,9 @@ public class EvaAfter : MonoBehaviour
     private IEnumerator EndCutsceneFade()
     {
         Fadescene.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
         Fadescene.SetActive(false);
-        yield return new WaitForSeconds(0.5f);
-        enemyCutscene.Die();
-        yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("DusanBefore");
     }
 }
+
+

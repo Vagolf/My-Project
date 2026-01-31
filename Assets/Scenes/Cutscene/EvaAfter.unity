@@ -618,7 +618,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: c7f7da4d38a712f4188382599babc591, type: 3}
+  m_Texture: {fileID: 2800000, guid: b4c3dce9128e48d4c997e7cdf8fb26cc, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -666,7 +666,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 023e515c46be7e44fa6945821201db4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playScene: GamePlayEva
+  playScene: DusanBefore
 --- !u!1 &434664871
 GameObject:
   m_ObjectHideFlags: 0

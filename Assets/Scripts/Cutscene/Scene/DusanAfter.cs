@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public class EvaAfter : MonoBehaviour
+public class DusanAfter : MonoBehaviour
 {
     public GameObject Fadescene;
     public GameObject BgScreen;
@@ -88,21 +88,25 @@ public class EvaAfter : MonoBehaviour
             Speaker.Kaisa,
             Speaker.Enemy,
             Speaker.Kaisa,
+            Speaker.Enemy,
+            Speaker.Kaisa,
             Speaker.Enemy
         };
 
         lines = new string[]
         {
-            "ดี… งั้นก็ลองฝ่าพายุของฉันดู",
-            "เธอไม่สงสัยเหรอ…",
-            "สงสัยอะไร",
-            "ว่าทำไมเธอถึงเก่งกว่าคนทั่วไป",
+            "ทำไม… หน้าคุ้นขนาดนี้…",
+            "ไคซะ…",
+            "ไม่จริง… พ่อ?",
+            "ใช่… ข้าเอง",
+            "แล้วแม่ล่ะ… บ้านล่ะ!",
+            "ข้าจำเป็นต้องทำ เพื่อให้เธอรอด",
+            "นี่มันบ้า…",
+            "ข้าหวังให้ความแค้นทำให้เธอแข็งแกร่งพอจะล้มมันได้",
+            "แล้วฉันต้องทำยังไงต่อ…",
+            "จงเลือกอนาคตของตัวเอง…",
             "...",
-            "พลังนั้น… มาจากพ่อแม่เธอเอง",
-            "พูดอะไรของเธอ!",
-            "นายของฉันรออยู่…",
-            "แล้วเขาคือใคร!",
-            "คนที่เธอรู้จักดีที่สุด…"
+            "ไม่ใช่อนาคตที่ความแค้นกำหนด"
         };
 
         StartCoroutine(CutsceneStart());
@@ -266,6 +270,6 @@ public class EvaAfter : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         enemyCutscene.Die();
         yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("DusanBefore");
+        SceneManager.LoadScene("EndScene");
     }
 }
