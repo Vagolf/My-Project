@@ -4861,6 +4861,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!1 &381834734
 GameObject:
   m_ObjectHideFlags: 0
@@ -11223,7 +11226,7 @@ MonoBehaviour:
   stage3Button: {fileID: 586666395}
   mapPreview: {fileID: 1130130151}
   stage1Sprite: {fileID: 21300000, guid: 6d6deb1006fd4b84885bac72468f0dce, type: 3}
-  stage2Sprite: {fileID: 0}
+  stage2Sprite: {fileID: 21300000, guid: 2e0c778c166147e4d8503cf5ac115db3, type: 3}
   stage3Sprite: {fileID: 21300000, guid: 0b55dabd2a53ded4bbde87fffa3dc843, type: 3}
   mapPreviews:
   - {fileID: 1130130151}
@@ -11234,9 +11237,9 @@ MonoBehaviour:
   romanBuildIndex: 1
   evaBuildIndex: 2
   dusanBuildIndex: 3
-  romanSceneName: GamePlay
-  evaSceneName: GamePlayEva
-  dusanSceneName: GamePlayDusan
+  romanSceneName: RomanBefore
+  evaSceneName: EvaBefore
+  dusanSceneName: DusanBefore
 --- !u!114 &849024752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15017,6 +15020,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!114 &1218117613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15029,6 +15035,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!1 &1242931502
 GameObject:
   m_ObjectHideFlags: 0
@@ -15617,6 +15626,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!1 &1289530285
 GameObject:
   m_ObjectHideFlags: 0
@@ -19149,6 +19161,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!1 &1598012559
 GameObject:
   m_ObjectHideFlags: 0
@@ -23732,6 +23747,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9723bf3cb1c18fc458b559edae27da30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterImage: {fileID: 0}
+  displayImage: {fileID: 0}
+  characterSprite: {fileID: 0}
 --- !u!1 &1949543456
 GameObject:
   m_ObjectHideFlags: 0
