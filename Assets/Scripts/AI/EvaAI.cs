@@ -17,6 +17,8 @@ public class EvaAI : MonoBehaviour
 
     [Tooltip("เข้าใกล้ถึงระยะนี้จะหยุดแล้วโจมตี")]
     [SerializeField] private float attackStopDistance = 5.5f;
+    [SerializeField] private float atk2StopDistance = 5.5f;
+    [SerializeField] private float ultmateStopDistance = 5.5f;
 
     [SerializeField] private LayerMask groundLayer;
 
@@ -25,7 +27,7 @@ public class EvaAI : MonoBehaviour
     [SerializeField] private Transform firePointNormal;
     [SerializeField] private float normalDamage = 75f;
     [SerializeField] private float normalProjectileSpeed = 18f;
-    [SerializeField] private float normalFireInterval = 0.25f; // กันยิงรัว 60fps
+    [SerializeField] private float normalCooldown = 2f; // ✅ เพิ่มตัวแปรคูลดาวน์ยิงปกติ
 
     [Header("Attack - Crouch ยิงสตั๊น + ผลักถอย")]
     [SerializeField] private GameObject stunProjectilePrefab;
@@ -66,9 +68,9 @@ public class EvaAI : MonoBehaviour
     private bool ground;
     private CircleCollider2D hurtTrigger;
 
-    private float nextNormalTime = 0f;
+    private float nextNormalTime = 0.5f;
     private float nextStunReadyTime = 0f;
-    private float nextUltiReadyTime = 0f;
+    private float nextUltiReadyTime = 60f;
 
     private bool actionLocked = false;
 
@@ -83,7 +85,6 @@ public class EvaAI : MonoBehaviour
     {
         FindTargetIfNeeded();
 
-        // auto hurt trigger so player attacks can detect Eva by overlap
         if (addHurtTrigger)
         {
             hurtTrigger = GetComponent<CircleCollider2D>();
@@ -93,13 +94,13 @@ public class EvaAI : MonoBehaviour
             hurtTrigger.offset = hurtOffset;
         }
 
-        // กันอัลติใช้ทันทีตอนเริ่มเกม
-        nextUltiReadyTime = Time.time + 1f;
+        // ✅ ตั้งเวลาคูลดาวน์เริ่มต้น ไม่ให้บอสสแปมท่าใหญ่ทันทีที่เริ่มเกม
+        nextUltiReadyTime = Time.time + ultimateCooldown;
+        nextStunReadyTime = Time.time + stunCooldown; // <-- เพิ่มบรรทัดนี้ครับ!
     }
 
     private void Update()
     {
-        // ถ้ามี Timer.GateBlocked ในเกมคุณ
         if (Timer.GateBlocked)
         {
             StopMove();
@@ -138,24 +139,30 @@ public class EvaAI : MonoBehaviour
             StopMove();
             SetRun(false);
 
-            // Priority: Ultimate > Stun > Normal
-            if (Time.time >= nextUltiReadyTime)
-            {
-                StartCoroutine(UltimateRoutine());
-                UpdateAnim();
-                return;
-            }
+            // Ultimate
+            //if (Time.time >= nextUltiReadyTime)
+            //{
+            //    Debug.Log("Ultimate Start");
+            //    StartCoroutine(UltimateRoutine());
+            //    UpdateAnim();
+            //    return;
+            //}
 
-            // Stun ยิงเมื่อคูลดาวน์พร้อม
+            // Atk2 - Stun Shot
             if (Time.time >= nextStunReadyTime)
             {
+                Debug.Log("Stun Shot Start");
                 StartCoroutine(StunShotRoutine());
                 UpdateAnim();
                 return;
             }
 
-            // ยิงธรรมดาเรื่อย ๆ
-            TryNormalShot(dir);
+            // ✅ Normal Attack: ตรวจสอบคูลดาวน์ก่อน
+            if (Time.time >= nextNormalTime)
+            {
+                Debug.Log("Normal Shot Start");
+                StartCoroutine(NormalShotRoutine());
+            }
 
             UpdateAnim();
             return;
@@ -170,24 +177,42 @@ public class EvaAI : MonoBehaviour
     // =========================
     // Attack Skills
     // =========================
-    private void TryNormalShot(float dir)
+
+    // ✅ เปลี่ยนมายิงผ่าน Coroutine เพื่อคุมจังหวะและ Cooldown ได้สมบูรณ์
+    private IEnumerator NormalShotRoutine()
     {
-        if (normalProjectilePrefab == null) return;
-        if (Time.time < nextNormalTime) return;
+        actionLocked = true; // ล็อคไม่ให้ขยับ
+        nextNormalTime = Time.time + normalCooldown; // ตั้งเวลาคูลดาวน์ครั้งถัดไป
 
-        nextNormalTime = Time.time + Mathf.Max(0.05f, normalFireInterval);
-
-        // animation trigger (ถ้ามี)
-        TriggerIfExists(atkTrigger);
-
-        Vector3 spawn = firePointNormal != null ? firePointNormal.position : transform.position;
-        GameObject go = Instantiate(normalProjectilePrefab, spawn, Quaternion.identity);
-
-        var proj = go.GetComponent<EvaProjectile>();
-        if (proj != null)
+        if (anim != null && !string.IsNullOrEmpty(atkTrigger))
         {
-            proj.Init(new Vector2(dir, 0f), normalProjectileSpeed, normalDamage, Opponent, 0f, 0f);
+            anim.SetBool(atkTrigger, true); // สั่งเล่นแอนิเมชันโจมตี
         }
+
+        // รอจังหวะแอนิเมชันให้มือสะบัดก่อนเสกกระสุน (ปรับเวลา 0.15f ได้ตามแอนิเมชันของคุณ)
+        yield return new WaitForSecondsRealtime(0.15f);
+
+        if (normalProjectilePrefab != null && firePointNormal != null)
+        {
+            float direction = target != null ? Mathf.Sign(target.position.x - transform.position.x) : Mathf.Sign(transform.localScale.x);
+            GameObject go = Instantiate(normalProjectilePrefab, firePointNormal.position, Quaternion.identity);
+
+            ProjectileBehaviour proj = go.GetComponent<ProjectileBehaviour>();
+            if (proj != null)
+            {
+                proj.Init(new Vector2(direction, 0f), normalProjectileSpeed, normalDamage, Opponent, 0f, 0f);
+            }
+        }
+
+        // รอให้แอนิเมชันโจมตีเล่นจนจบ
+        yield return new WaitForSecondsRealtime(0.35f);
+
+        if (anim != null && !string.IsNullOrEmpty(atkTrigger))
+        {
+            anim.SetBool(atkTrigger, false); // สั่งปิดแอนิเมชัน เพื่อกลับไป Idle/Walk
+        }
+
+        actionLocked = false; // ปลดล็อคให้เดินหรือโจมตีท่าอื่นต่อได้
     }
 
     private IEnumerator StunShotRoutine()
@@ -197,24 +222,47 @@ public class EvaAI : MonoBehaviour
         actionLocked = true;
         nextStunReadyTime = Time.time + stunCooldown;
 
-        // crouch anim
+        // ==========================================
+        // 1. สั่งให้เข้าท่าก้ม (Eva-defent) ก่อน
+        // ==========================================
+        SetRun(false);
+        // 🚨 บังคับ atk ให้เป็น false ก่อน เพื่อให้ผ่านด่านลูกศรไปท่าก้มได้!
+        if (anim != null && !string.IsNullOrEmpty(atkTrigger)) anim.SetBool(atkTrigger, false);
         SetCrouch(true);
-        TriggerIfExists(atkTrigger);
 
+        // รอเสี้ยววินาที (0.05วิ) ให้ Animator เดินทางไปถึงท่า Eva-defent 
+        yield return new WaitForSecondsRealtime(0.05f);
+
+        // ==========================================
+        // 2. พอตัวก้มแล้ว สั่งโจมตีได้ (วิ่งไป Eva-atk2)
+        // ==========================================
+        if (anim != null && !string.IsNullOrEmpty(atkTrigger)) anim.SetBool(atkTrigger, true);
+
+        // รอแอนิเมชันง้างยิง (อาจจะปรับเพิ่ม/ลดได้ตามความสวยงามของท่า)
         yield return new WaitForSecondsRealtime(0.15f);
 
+        // ==========================================
+        // 3. สร้างกระสุน
+        // ==========================================
         float dir = Mathf.Sign(target.position.x - transform.position.x);
         Vector3 spawn = firePointStun != null ? firePointStun.position : transform.position;
 
         GameObject go = Instantiate(stunProjectilePrefab, spawn, Quaternion.identity);
-        var proj = go.GetComponent<EvaProjectile>();
+        ProjectileAtk2Behaviour proj = go.GetComponent<ProjectileAtk2Behaviour>();
         if (proj != null)
         {
             proj.Init(new Vector2(dir, 0f), stunProjectileSpeed, stunDamage, Opponent, stunKnockbackForce, stunDuration);
         }
 
-        yield return new WaitForSecondsRealtime(0.25f);
+        // รอจนท่าทางยิงเล่นจบ
+        yield return new WaitForSecondsRealtime(0.4f);
+
+        // ==========================================
+        // 4. รีเซ็ตกลับท่ายืนปกติ
+        // ==========================================
         SetCrouch(false);
+        if (anim != null && !string.IsNullOrEmpty(atkTrigger)) anim.SetBool(atkTrigger, false);
+
         actionLocked = false;
     }
 
@@ -304,5 +352,49 @@ public class EvaAI : MonoBehaviour
         var t = GameObject.FindGameObjectWithTag(targetTag);
         if (t != null) { target = t.transform; return true; }
         return false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectRange);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, attackStopDistance);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, atk2StopDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, ultmateStopDistance);
+
+        if (target != null)
+        {
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(transform.position, target.position);
+        }
+    }
+
+    // =========================
+    // ✅ เพิ่มฟังก์ชันนี้ สำหรับถูกเรียกตอนเริ่มรอบใหม่
+    // =========================
+    public void ResetCooldowns()
+    {
+        // 1. หยุดการทำงานของท่าโจมตีที่อาจจะค้างอยู่ตอนตาย
+        StopAllCoroutines();
+        actionLocked = false;
+
+        // 2. รีเซ็ตเวลาคูลดาวน์ใหม่ทั้งหมด (เหมือนตอนเริ่มเกม)
+        nextNormalTime = Time.time + normalCooldown;
+        nextStunReadyTime = Time.time + stunCooldown;
+        nextUltiReadyTime = Time.time + ultimateCooldown;
+
+        // 3. ปิดแอนิเมชันโจมตีที่อาจจะค้างอยู่
+        if (anim != null)
+        {
+            if (!string.IsNullOrEmpty(atkTrigger)) anim.SetBool(atkTrigger, false);
+            SetCrouch(false);
+            SetRun(false);
+        }
     }
 }

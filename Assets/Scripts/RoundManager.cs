@@ -139,6 +139,15 @@ public class RoundManager : MonoBehaviour
             yield return null; // wait a frame
             timer.enabled = true;
         }
+        // 1) Reset HP & Cooldowns
+        if (player != null) player.GetComponent<HealthCh>()?.ResetForNewRound();
+        if (enemy != null)
+        {
+            enemy.GetComponent<HealthEnemy>()?.ResetForNewRound();
+
+            // ✅ สั่งให้บอส Eva รีเซ็ตตัวเอง เริ่มนับคูลดาวน์ใหม่หมด
+            enemy.GetComponent<EvaAI>()?.ResetCooldowns();
+        }
 
         roundTransitioning = false;
     }

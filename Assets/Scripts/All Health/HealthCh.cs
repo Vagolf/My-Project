@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +29,9 @@ public class HealthCh : MonoBehaviour
     [SerializeField] private float crouchGuardCooldown = 5f;
     private int availableCrouchBlocks;
     private float crouchRechargeTimer;
+
+    // 1. เพิ่มตัวแปรเช็คว่าติดสตั๊นอยู่ไหม (ไว้บนสุดของคลาส Player)
+    public bool isStunned = false;
 
     // Events to notify listeners about crouch guard changes
     public event System.Action<int, int> OnCrouchBlockUsed;      // (available, max)
@@ -175,6 +178,32 @@ public class HealthCh : MonoBehaviour
         // reset crouch guard charges
         availableCrouchBlocks = maxCrouchBlocks;
         crouchRechargeTimer = 0f;
+    }
+
+
+
+    // 2. เพิ่มฟังก์ชันรับค่า Stun (เอาไปวางไว้ล่างๆ ในสคริปต์ Player)
+    public void ApplyStun(float duration)
+    {
+        if (!isStunned)
+        {
+            StartCoroutine(StunRoutine(duration));
+        }
+    }
+
+    private System.Collections.IEnumerator StunRoutine(float duration)
+    {
+        isStunned = true;
+
+        // ตรงนี้สั่งแอนิเมชันให้เล่นท่า Hurt (ถ้ามี)
+        // anim.SetTrigger("hurt");
+
+        // หยุดความเร็วของ Player ให้ยืนนิ่งๆ
+        // GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+
+        yield return new WaitForSeconds(duration); // รอ 1 วินาที
+
+        isStunned = false; // กลับมาขยับได้ปกติ
     }
 }
 
