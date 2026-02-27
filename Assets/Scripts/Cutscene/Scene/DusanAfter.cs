@@ -270,6 +270,6 @@ public class DusanAfter : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         enemyCutscene.Die();
         yield return new WaitForSeconds(3f);
-        SceneManager.LoadScene("EndScene");
+        SceneManager.LoadScene("EndScene 1");
     }
 }

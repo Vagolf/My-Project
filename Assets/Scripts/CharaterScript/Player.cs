@@ -467,6 +467,12 @@ public class Player : MonoBehaviour
         anim.SetBool("ground", false);
         anim.ResetTrigger("atk");
 
+        // ✅ เพิ่มส่วนนี้: รีเซ็ตสถานะโจมตีทิ้งทันทีเมื่อกระโดดขัดจังหวะ
+        anim.SetBool("atk", false);
+        attack = false;
+        movementLocked = false;
+        speed = 20f;
+
         // apply jump
         body.velocity = new Vector2(body.velocity.x, jumpForce);
         anim.SetTrigger("jump");
@@ -491,6 +497,13 @@ public class Player : MonoBehaviour
     {
         canDash = false;
         isDashing = true;
+
+        // ✅ เพิ่มส่วนนี้: รีเซ็ตสถานะโจมตีทิ้งทันทีเมื่อกดพุ่งแคนเซิลท่าตี
+        anim.SetBool("atk", false);
+        attack = false;
+        movementLocked = false;
+        speed = 20f;
+
         float originalGravity = body.gravityScale;
         body.gravityScale = 0f;
         body.velocity = new Vector2(transform.localScale.x * dashingPower, 0f);

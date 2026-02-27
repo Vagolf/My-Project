@@ -4387,7 +4387,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03d4528e6d598cc44889071f30227dea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingHealth: 1600
+  startingHealth: 1000
   healthBar: {fileID: 8251788398431390302}
   popUpDamagePrefab: {fileID: 0}
 --- !u!114 &1180192678
@@ -12970,11 +12970,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   damage: 100
-  normalAttackDamage: 240
+  normalAttackDamage: 70
   crouchAttackDamage: 180
-  crouchAttackCooldown: 4
-  ultimateCooldown: 30
-  ultimateDamage: 800
+  crouchAttackCooldown: 6
+  ultimateCooldown: 25
+  ultimateDamage: 540
   ultimateHitRadiusMultiplier: 2
   logUltimateCooldown: 1
   ultimateTrigger: ulti
