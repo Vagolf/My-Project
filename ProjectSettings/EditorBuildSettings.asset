@@ -47,4 +47,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Cutscene/EndScene.unity
     guid: 14bf347c865e0dc4fb755088fa9c0fd0
+  - enabled: 1
+    path: Assets/Scenes/PVE/Kaisa/Fight_Kaisa_vs_Roman.unity
+    guid: 5b0d77ec197f98a468662394cc46417f
+  - enabled: 1
+    path: Assets/Scenes/PVE/Kaisa/Figh_Kaisa_vs_Dusan.unity
+    guid: 61a41f7864de934458069c7bf7231eb6
   m_configObjects: {}

@@ -1,116 +1,76 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // ต้องใช้สำหรับเปลี่ยนฉาก
+using UnityEngine.SceneManagement;
 
 public class PvESelectionManager : MonoBehaviour
 {
-    // กำหนดชื่อตัวละครให้เป็น Enum จะได้ไม่พิมพ์ผิด
-    public enum Character { None, Kaisa, Roman, Eva, Dusan }
+    [Header("สถานะที่เลือกปัจจุบัน (ห้ามพิมพ์เอง ระบบจะจำให้)")]
+    public string selectedPlayer = "";
+    public string selectedEnemy = "";
 
-    [Header("สถานะที่เลือกปัจจุบัน")]
-    public Character selectedPlayer = Character.None;
-    public Character selectedEnemy = Character.None;
-
-    [Header("UI ปุ่มเลือกตัวละคร (ลากปุ่มมาใส่ให้ตรงกับลำดับ)")]
-    // ลำดับ: 0=Kaisa, 1=Roman, 2=Eva, 3=Dusan
-    public Image[] playerButtons;
-    public Image[] enemyButtons;
-
-    [Header("สีไฮไลท์เมื่อถูกเลือก")]
+    [Header("สีไฮไลท์ปุ่ม")]
     public Color normalColor = Color.white;
-    public Color selectedColor = Color.yellow; // สีตอนกดเลือก
+    public Color selectedColor = Color.cyan;
 
-    // ----------------------------------------------------
-    // ฟังก์ชันสำหรับฝั่ง Player (ผูกกับปุ่มฝั่งซ้าย)
-    // ----------------------------------------------------
-    public void SelectPlayer(int characterIndex)
+    [Header("ปุ่มฝั่งซ้าย (Player)")]
+    public Image[] playerButtons;
+    // ใส่ชื่อตัวละครให้ตรงกับลำดับปุ่ม (0=Kaisa, 1=Eva, 2=Roman, 3=Dusan)
+    public string[] playerNames = { "Kaisa", "Eva", "Roman", "Dusan" };
+
+    [Header("ปุ่มฝั่งขวา (Enemy)")]
+    public Image[] enemyButtons;
+    public string[] enemyNames = { "Kaisa", "Eva", "Roman", "Dusan" };
+
+    // ---------------------------------------------------
+    // ฟังก์ชันนี้เอาไปผูกกับปุ่มฝั่งซ้ายทั้ง 4 ปุ่ม
+    // ---------------------------------------------------
+    public void SelectPlayer(int index)
     {
-        // 1=Kaisa, 2=Roman, 3=Eva, 4=Dusan (อิงตาม Enum ด้านบน, 0 คือ None)
-        selectedPlayer = (Character)characterIndex;
-
-        // อัปเดตสีปุ่มให้รู้ว่าเลือกตัวไหน
-        UpdateVisuals(playerButtons, characterIndex - 1);
-        Debug.Log("Player Selected: " + selectedPlayer);
+        selectedPlayer = playerNames[index]; // จำชื่อตัวละคร
+        UpdateButtonColors(playerButtons, index); // เปลี่ยนสีปุ่ม
+        Debug.Log("เลือก Player: " + selectedPlayer);
     }
 
-    // ----------------------------------------------------
-    // ฟังก์ชันสำหรับฝั่ง Enemy (ผูกกับปุ่มฝั่งขวา)
-    // ----------------------------------------------------
-    public void SelectEnemy(int characterIndex)
+    // ---------------------------------------------------
+    // ฟังก์ชันนี้เอาไปผูกกับปุ่มฝั่งขวาทั้ง 4 ปุ่ม
+    // ---------------------------------------------------
+    public void SelectEnemy(int index)
     {
-        selectedEnemy = (Character)characterIndex;
-        UpdateVisuals(enemyButtons, characterIndex - 1);
-        Debug.Log("Enemy Selected: " + selectedEnemy);
+        selectedEnemy = enemyNames[index];
+        UpdateButtonColors(enemyButtons, index);
+        Debug.Log("เลือก Enemy: " + selectedEnemy);
     }
 
-    // ฟังก์ชันเปลี่ยนสีปุ่ม
-    private void UpdateVisuals(Image[] buttons, int selectedIndex)
+    // ระบบเปลี่ยนสีปุ่ม
+    private void UpdateButtonColors(Image[] buttons, int selectedIndex)
     {
         for (int i = 0; i < buttons.Length; i++)
         {
             if (buttons[i] != null)
             {
-                // ถ้าเป็นปุ่มที่ถูกเลือก ให้เปลี่ยนเป็นสีที่ตั้งไว้ ถ้าไม่ใช่ให้เป็นสีปกติ
                 buttons[i].color = (i == selectedIndex) ? selectedColor : normalColor;
             }
         }
     }
 
-    // ----------------------------------------------------
-    // ฟังก์ชันเมื่อกดปุ่ม Fight
-    // ----------------------------------------------------
+    // ---------------------------------------------------
+    // ฟังก์ชันนี้เอาไปผูกกับปุ่ม Fight
+    // ---------------------------------------------------
     public void OnFightButtonClicked()
     {
-        // 1. เช็คว่าเลือกครบทั้ง 2 ฝั่งหรือยัง
-        if (selectedPlayer == Character.None || selectedEnemy == Character.None)
+        if (string.IsNullOrEmpty(selectedPlayer) || string.IsNullOrEmpty(selectedEnemy))
         {
-            Debug.LogWarning("กรุณาเลือกตัวละครให้ครบทั้ง Player และ Enemy!");
-            // ตรงนี้คุณอาจจะทำ Popup แจ้งเตือนผู้เล่นเพิ่มเติมได้ครับ
+            Debug.LogWarning("กรุณาเลือกตัวละครทั้งฝั่ง Player และ Enemy ก่อนกด Fight!");
             return;
         }
 
-        // 2. นำข้อมูลไปเช็คเพื่อเข้า Scene
-        string sceneToLoad = DetermineSceneName(selectedPlayer, selectedEnemy);
+        // 🔥 ตรงนี้คือเงื่อนไขการเข้า Scene 
+        // สมมติว่าตั้งชื่อ Scene ใน Unity ไว้แบบนี้ "Fight_Kaisa_vs_Roman"
+        string sceneName = "Fight_" + selectedPlayer + "_vs_" + selectedEnemy;
 
-        if (!string.IsNullOrEmpty(sceneToLoad))
-        {
-            Debug.Log("กำลังโหลดฉาก: " + sceneToLoad);
-            SceneManager.LoadScene(sceneToLoad);
-        }
-        else
-        {
-            Debug.LogError("ไม่พบเงื่อนไข Scene สำหรับคู่นี้!");
-        }
-    }
+        Debug.Log("กำลังโหลดฉาก: " + sceneName);
 
-    // ----------------------------------------------------
-    // 🧠 ระบบตัดสินใจเลือก Scene (แก้ชื่อ Scene ตรงนี้ให้ตรงกับเกมของคุณ)
-    // ----------------------------------------------------
-    private string DetermineSceneName(Character player, Character enemy)
-    {
-        // วิธีที่ 1: ตั้งชื่อ Scene ให้เป็นระบบ เช่น "PvE_Kaisa_vs_Roman"
-        // return $"PvE_{player}_vs_{enemy}"; 
-
-        // วิธีที่ 2: ใช้ If-Else เช็คทีละคู่ (ยืดหยุ่นกว่าถ้าด่านใช้ชื่อไม่เหมือนกัน)
-        if (player == Character.Kaisa && enemy == Character.Roman)
-        {
-            return "Stage1_Forest"; // เปลี่ยนเป็นชื่อ Scene จริงของคุณ
-        }
-        else if (player == Character.Kaisa && enemy == Character.Eva)
-        {
-            return "Stage2_Temple";
-        }
-        else if (player == Character.Roman && enemy == Character.Dusan)
-        {
-            return "Stage3_Castle";
-        }
-        // ตรวจสอบกรณีเลือกตัวเหมือนกัน (กระจก)
-        else if (player == Character.Kaisa && enemy == Character.Kaisa)
-        {
-            return "Stage_Mirror_Kaisa";
-        }
-
-        // ถ้าใช้ชื่อ Scene ตามสูตรสำเร็จที่คาดเดาได้ เปิดบรรทัดนี้ทิ้งไว้เป็น Default ได้เลยครับ
-        return $"Scene_{player}_vs_{enemy}";
+        // เอาเครื่องหมาย // ออกเมื่อคุณสร้าง Scene รอไว้ใน Build Settings แล้ว
+        SceneManager.LoadScene(sceneName); 
     }
 }
