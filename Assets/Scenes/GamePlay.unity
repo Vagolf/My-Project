@@ -3093,6 +3093,7 @@ MonoBehaviour:
   resetTimeScale: 1
   timeScaleOnReload: 1
   defeatPanel: {fileID: 1654891425}
+  mainMenuSceneName: MainMenu
 --- !u!1 &905834329
 GameObject:
   m_ObjectHideFlags: 0
@@ -7858,10 +7859,10 @@ MonoBehaviour:
   damage: 100
   normalAttackDamage: 120
   crouchAttackDamage: 250
-  normalAttackCooldown: 6
+  normalAttackCooldown: 2.5
   crouchAttackCooldown: 6
   useCrouchOnProximity: 1
-  ultimateCooldown: 240
+  ultimateCooldown: 30
   ultimateDamage: 500
   ultimateHitRadiusMultiplier: 1
   logUltimateCooldown: 1
@@ -12792,11 +12793,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   damage: 100
-  normalAttackDamage: 75
-  crouchAttackDamage: 180
+  normalAttackDamage: 80
+  crouchAttackDamage: 200
   crouchAttackCooldown: 4
-  ultimateCooldown: 25
-  ultimateDamage: 540
+  ultimateCooldown: 20
+  ultimateDamage: 600
   ultimateHitRadiusMultiplier: 2
   logUltimateCooldown: 1
   ultimateTrigger: ulti

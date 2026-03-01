@@ -4100,13 +4100,13 @@ MonoBehaviour:
   normalProjectilePrefab: {fileID: 8793019744528844994, guid: 89b64ff4b1eff7347bedc4e4a7a80cea,
     type: 3}
   firePointNormal: {fileID: 824034543}
-  normalDamage: 75
+  normalDamage: 70
   normalProjectileSpeed: 18
-  normalCooldown: 1.8
+  normalCooldown: 2
   airStrikePrefab: {fileID: 4605289809803295096, guid: 2513a06885485cf4592b1f151170fbf1,
     type: 3}
   airStrikeHeight: 12
-  airStrikeDamage: 100
+  airStrikeDamage: 90
   airStrikeSpeed: 15
   airStrikeCooldown: 8
   Opponent:
@@ -11628,11 +11628,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   damage: 100
-  normalAttackDamage: 70
-  crouchAttackDamage: 180
+  normalAttackDamage: 90
+  crouchAttackDamage: 200
   crouchAttackCooldown: 4
-  ultimateCooldown: 25
-  ultimateDamage: 540
+  ultimateCooldown: 20
+  ultimateDamage: 600
   ultimateHitRadiusMultiplier: 2
   logUltimateCooldown: 1
   ultimateTrigger: ulti

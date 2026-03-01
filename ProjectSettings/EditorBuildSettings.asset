@@ -51,6 +51,9 @@ EditorBuildSettings:
     path: Assets/Scenes/PVE/Kaisa/Fight_Kaisa_vs_Roman.unity
     guid: 5b0d77ec197f98a468662394cc46417f
   - enabled: 1
-    path: Assets/Scenes/PVE/Kaisa/Figh_Kaisa_vs_Dusan.unity
+    path: Assets/Scenes/PVE/Kaisa/Fight_Kaisa_vs_Dusan.unity
     guid: 61a41f7864de934458069c7bf7231eb6
+  - enabled: 1
+    path: Assets/Scenes/PVE/Roman/Fight_Roman_vs_Kaisa.unity
+    guid: e7e866077e5a23145b819749a6ddd0cb
   m_configObjects: {}

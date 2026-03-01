@@ -3005,6 +3005,7 @@ MonoBehaviour:
   resetTimeScale: 1
   timeScaleOnReload: 1
   defeatPanel: {fileID: 1654891425}
+  mainMenuSceneName: MainMenu
 --- !u!1 &905834329
 GameObject:
   m_ObjectHideFlags: 0
@@ -4877,7 +4878,7 @@ MonoBehaviour:
   firePointNormal: {fileID: 824034543}
   normalDamage: 75
   normalProjectileSpeed: 18
-  normalCooldown: 1.8
+  normalCooldown: 2
   airStrikePrefab: {fileID: 4605289809803295096, guid: 2513a06885485cf4592b1f151170fbf1,
     type: 3}
   airStrikeHeight: 12
@@ -12546,11 +12547,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   damage: 100
-  normalAttackDamage: 70
-  crouchAttackDamage: 180
+  normalAttackDamage: 80
+  crouchAttackDamage: 250
   crouchAttackCooldown: 4
-  ultimateCooldown: 25
-  ultimateDamage: 540
+  ultimateCooldown: 20
+  ultimateDamage: 620
   ultimateHitRadiusMultiplier: 2
   logUltimateCooldown: 1
   ultimateTrigger: ulti

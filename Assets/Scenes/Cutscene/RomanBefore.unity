@@ -1784,7 +1784,7 @@ MonoBehaviour:
   thaiFont: {fileID: 11400000, guid: 954e47783de39ba43a1b8a3e920cfd59, type: 2}
   EnemyNameObj: {fileID: 705464415}
   KaisaNameObj: {fileID: 1948485481}
-  enemyName: Eva
+  enemyName: Roman
   kaisaName: Kaisa
   eventPos: 0
   currentTextLength: 0

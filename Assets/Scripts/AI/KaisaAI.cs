@@ -22,8 +22,6 @@ public class KaisaAI : MonoBehaviour
     [Header("Ranges")]
     [SerializeField] private float detectRange = 12f;
     [SerializeField] private float attackRange = 1.9f;
-
-    // 🔥 เพิ่ม 2 ตัวแปรนี้เพื่อคุมระยะการเข้าหา
     [Tooltip("ระยะไกลสุดที่จะหยุดเดิน (ถอยหลังถ้าใกล้กว่านี้)")]
     [SerializeField] private float stopDistance = 1.0f;
     [Tooltip("ระยะใกล้สุดที่จะหยุดเดินเข้าหา (ห้ามเข้าใกล้กว่านี้)")]
@@ -47,6 +45,7 @@ public class KaisaAI : MonoBehaviour
     public float radius = 1f;
     public GameObject CrouchAttackPoint;
     public float crouchRadius = 1f;
+    [Tooltip("ใส่ Layer ของผู้เล่นตรงนี้ (สำคัญมาก!)")]
     public LayerMask Opponent;
     public float normalAttackDamage = 70f;
     public float crouchAttackDamage = 180f;
@@ -56,34 +55,30 @@ public class KaisaAI : MonoBehaviour
     private float crouchAttackTimer = 0f;
     private bool attack;
 
-    // 🔥 เพิ่ม List สำหรับกันดาเมจเบิ้ล (Multi-hit prevention)
+    // 🔥 ระบบนับเวลาโจมตีใหม่ (ไม่ต้องง้อ Animation Event)
+    [Header("Attack Timing (ระบบตั้งเวลาตี)")]
+    [SerializeField] private float normalAttackDuration = 0.5f;
+    [SerializeField] private float normalAttackHitDelay = 0.2f;
+    [SerializeField] private float crouchAttackDuration = 0.5f;
+    [SerializeField] private float crouchAttackHitDelay = 0.2f;
+
     private List<HealthCh> damagedPlayers = new List<HealthCh>();
 
     [Header("Ultimate Skill (Kaisa)")]
     [SerializeField] private float ultimateCooldown = 8f;
     [SerializeField] private float ultimateDamage = 500f;
-    [SerializeField] private float ultimateHitRadiusMultiplier = 2f;
     private float ultimateTimer = 0f;
     private bool ultimateReady = false;
     private bool inUltimate = false;
     private bool preparingUltimate = false;
     [SerializeField] private string ultimateTrigger = "ulti";
     public UltimateDamagePoint ultimateDamagePoint;
-
-    [Header("Ultimate Area")]
-    [SerializeField] private bool ultimateUseBox = false; // รองรับ Box
-    [SerializeField] private Vector2 ultimateBoxSize = new Vector2(4f, 2f);
-    [SerializeField] private float ultimateBoxAngle = 0f;
-    [SerializeField] private Transform UltimateAttackPoint;
     private bool ultimateDamageFired = false;
 
-    // ----- ตัวแปร Warp ของ Kaisa ที่นำกลับมา -----
     [Header("Ultimate Warp On Hit")]
     [SerializeField] private bool enableUltimateHitWarp = true;
-    [SerializeField] private float ultimateHitWarpDistance = 5f;
     [SerializeField] private bool ultimateHitWarpUseTrail = true;
     [SerializeField] private bool ultimateWarpOnActivate = false;
-    [SerializeField] private bool ultimateWarpUseBoxCast = true;
     private bool ultimateHitWarpDone = false;
 
     [Header("Ultimate Warp Collision")]
@@ -154,44 +149,43 @@ public class KaisaAI : MonoBehaviour
         float dist = Vector2.Distance(transform.position, target.position);
         float dir = Mathf.Sign(target.position.x - transform.position.x);
 
-        // หันหน้าหาเป้าหมาย
         if (dir > 0.01f) transform.localScale = new Vector3(1, 1, 1);
         else if (dir < -0.01f) transform.localScale = new Vector3(-1, 1, 1);
 
-        // 🔥 Logic ใหม่: ตัดสินใจโจมตีก่อนเดิน
-        bool inNormalRange = dist <= attackRange;
-        var playerComp = target.GetComponent<RomanPlayer>();
-        bool targetCrouching = playerComp != null && playerComp.isCrouching;
-
-        if (inNormalRange)
-        {
-            body.velocity = new Vector2(0f, body.velocity.y); // อยู่ในระยะแล้ว หยุดเดินก่อน
-            anim.SetBool("run", false);
-
-            if (targetCrouching && crouchAttackTimer <= 0f)
-            {
-                anim.SetBool("crouch", true); anim.SetBool("atk", true);
-                crouchAttackTimer = crouchAttackCooldown; attack = true;
-            }
-            else if (normalAttackTimer <= 0f) // ถ้าผู้เล่นไม่นั่ง หรือ นั่งตีคูลดาวน์อยู่ ให้ตีธรรมดา
-            {
-                anim.SetBool("crouch", false); anim.SetBool("atk", true);
-                normalAttackTimer = normalAttackCooldown; attack = true;
-            }
-            else // ถ้ารอคูลดาวน์ตีอยู่
-            {
-                if (dist < stopDistance) // ถ้าใกล้ไป ค่อยถอย
-                {
-                    body.velocity = new Vector2(-dir * speed, body.velocity.y);
-                    anim.SetBool("run", true);
-                }
-            }
-        }
-        else // ถ้านอกระยะโจมตี ให้วิ่งเข้าหา
+        if (dist > minStopDistance && dist > attackRange)
         {
             body.velocity = new Vector2(dir * speed, body.velocity.y);
             anim.SetBool("run", true);
             if (canDash && dist > attackRange * 2.5f) StartCoroutine(Dash());
+        }
+        else
+        {
+            bool inNormalRange = dist <= attackRange;
+            var playerComp = target.GetComponent<RomanPlayer>();
+            bool targetCrouching = playerComp != null && playerComp.isCrouching;
+
+            // 🔥 เปลี่ยนการเรียกโจมตีมาใช้ Coroutine เหมือนผู้เล่น
+            if (targetCrouching && crouchAttackTimer <= 0f && inNormalRange)
+            {
+                StartCoroutine(CrouchAttackRoutine());
+            }
+            else if (inNormalRange && normalAttackTimer <= 0f)
+            {
+                StartCoroutine(NormalAttackRoutine());
+            }
+            else
+            {
+                if (dist < stopDistance)
+                {
+                    body.velocity = new Vector2(-dir * speed, body.velocity.y);
+                    anim.SetBool("run", true);
+                }
+                else
+                {
+                    body.velocity = new Vector2(0f, body.velocity.y);
+                    anim.SetBool("run", false);
+                }
+            }
         }
 
         if (anim != null) { anim.SetBool("ground", ground); anim.SetFloat("yVelocity", body.velocity.y); }
@@ -205,22 +199,91 @@ public class KaisaAI : MonoBehaviour
 
     private IEnumerator Dash()
     {
-        canDash = false; isDashing = true; attack = false; movementLocked = false;
+        canDash = false;
+        isDashing = true;
+        attack = false;
+        movementLocked = false;
         if (anim != null) anim.SetBool("atk", false);
+
+        StopCoroutine(nameof(NormalAttackRoutine));
+        StopCoroutine(nameof(CrouchAttackRoutine));
+        StopAttackAnimation();
+
         float originalGravity = body.gravityScale;
-        body.gravityScale = 0f;
+        body.gravityScale = 0f; // ปิดแรงโน้มถ่วงตอนพุ่ง
+
+        // พุ่งด้วยความเร็ว
         body.velocity = new Vector2(transform.localScale.x * dashingPower, 0f);
         if (tr) tr.emitting = true;
+
+        // รอจนหมดเวลาพุ่ง
         yield return new WaitForSeconds(dashnigTime);
+
         if (tr) tr.emitting = false;
-        body.gravityScale = originalGravity;
+
+        // 🔥 สำคัญมาก: ต้องเหยียบเบรก! สั่งความเร็วให้กลับมาเป็น 0 ไม่งั้นไถลตกแมพ
+        body.velocity = new Vector2(0f, 0f);
+
+        body.gravityScale = originalGravity; // เปิดแรงโน้มถ่วงกลับมา
         isDashing = false;
+
         yield return new WaitForSeconds(dashingCooldown);
         canDash = true;
     }
 
     // ==========================================
-    // โจมตีปกติ (อัปเกรด: กันดาเมจเบิ้ล)
+    // 🔥 ระบบตีด้วย Coroutine (ใหม่)
+    // ==========================================
+    private IEnumerator NormalAttackRoutine()
+    {
+        damagedPlayers.Clear();
+        anim.SetBool("run", false);
+        anim.SetBool("crouch", false);
+        anim.SetBool("atk", true);
+        attack = true;
+        movementLocked = true;
+        body.velocity = new Vector2(0, body.velocity.y);
+        normalAttackTimer = normalAttackCooldown;
+
+        yield return new WaitForSeconds(normalAttackHitDelay);
+        Attack(); // ปล่อยดาเมจ
+
+        float remainingTime = Mathf.Max(0f, normalAttackDuration - normalAttackHitDelay);
+        yield return new WaitForSeconds(remainingTime);
+
+        StopAttackAnimation();
+    }
+
+    private IEnumerator CrouchAttackRoutine()
+    {
+        damagedPlayers.Clear();
+        anim.SetBool("run", false);
+        anim.SetBool("crouch", true);
+        anim.SetBool("atk", true);
+        attack = true;
+        movementLocked = true;
+        body.velocity = new Vector2(0, body.velocity.y);
+        crouchAttackTimer = crouchAttackCooldown;
+
+        yield return new WaitForSeconds(crouchAttackHitDelay);
+        CrouchAttack(); // ปล่อยดาเมจ
+
+        float remainingTime = Mathf.Max(0f, crouchAttackDuration - crouchAttackHitDelay);
+        yield return new WaitForSeconds(remainingTime);
+
+        StopAttackAnimation();
+    }
+
+    public void StopAttackAnimation()
+    {
+        if (anim != null) anim.SetBool("atk", false);
+        attack = false;
+        movementLocked = false;
+        damagedPlayers.Clear();
+    }
+
+    // ==========================================
+    // โจมตี
     // ==========================================
     public void Attack()
     {
@@ -239,9 +302,6 @@ public class KaisaAI : MonoBehaviour
         }
     }
 
-    // ==========================================
-    // นั่งโจมตี (อัปเกรด: กันดาเมจเบิ้ล)
-    // ==========================================
     public void CrouchAttack()
     {
         if (CrouchAttackPoint == null) return;
@@ -259,33 +319,18 @@ public class KaisaAI : MonoBehaviour
         }
     }
 
-    // เคลียร์ค่าจำดาเมจทุกครั้งที่เริ่มง้างตี
-    public void OnAttackStart()
-    {
-        damagedPlayers.Clear(); // 🔥 ล้างความจำกันดาเมจหาย
-        if (anim != null) anim.SetBool("atk", true);
-        attack = true;
-    }
-
-    public void OnAttackEnd()
-    {
-        if (anim != null) anim.SetBool("atk", false);
-        attack = false;
-        movementLocked = false;
-        damagedPlayers.Clear(); // ล้างความจำตอนจบ
-    }
-
-    public void NormalAttackLockMovement() { movementLocked = true; if (body != null) body.velocity = new Vector2(0f, body.velocity.y); }
-    public void NormalAttackUnlockMovement() { movementLocked = false; }
-
-    // ================== ระบบ Ultimate ของ Kaisa (มีวาร์ป) ==================
+    // ================== ระบบ Ultimate ==================
     private IEnumerator PrepareAndStartUltimate()
     {
-        damagedPlayers.Clear(); // 🔥 ล้างความจำก่อนอันติ
-
+        damagedPlayers.Clear();
         preparingUltimate = true;
         body.velocity = new Vector2(0f, body.velocity.y);
         anim.SetBool("run", false);
+
+        StopCoroutine(nameof(NormalAttackRoutine));
+        StopCoroutine(nameof(CrouchAttackRoutine));
+        StopAttackAnimation();
+
         yield return null;
         inUltimate = true;
         preparingUltimate = false;
@@ -313,6 +358,8 @@ public class KaisaAI : MonoBehaviour
 
     private void PerformUltimateWarp()
     {
+        if (!ultimateDamageFired) UltimateDamageEvent();
+
         ultimateHitWarpDone = true;
         Vector3 startPos = transform.position;
         SpawnWarpEffect(ultimateWarpStartEffect, startPos + (Vector3)effectOffset, "start");
@@ -320,25 +367,14 @@ public class KaisaAI : MonoBehaviour
         float direction = transform.localScale.x >= 0 ? 1f : -1f;
         float halfWidthExtra = (ultimateWarpUseColliderBounds && boxCollider != null) ? boxCollider.bounds.extents.x : 0f;
         Vector2 dir = new Vector2(direction, 0f);
-        float allowedDistance = ultimateHitWarpDistance;
 
-        if (ultimateWarpUseBoxCast && boxCollider != null)
+        float maxDistance = 50f;
+        float allowedDistance = maxDistance;
+        RaycastHit2D hit = Physics2D.Raycast(startPos, dir, maxDistance + halfWidthExtra, ultimateWarpBlockLayers);
+        if (hit.collider != null)
         {
-            RaycastHit2D hit = Physics2D.BoxCast(startPos, boxCollider.size, 0f, dir, ultimateHitWarpDistance + halfWidthExtra, ultimateWarpBlockLayers);
-            if (hit.collider != null && hit.collider != boxCollider)
-            {
-                allowedDistance = hit.distance - ultimateWarpSkin;
-                if (allowedDistance < 0f) allowedDistance = 0f;
-            }
-        }
-        else
-        {
-            RaycastHit2D hit = Physics2D.Raycast(startPos, dir, ultimateHitWarpDistance + halfWidthExtra, ultimateWarpBlockLayers);
-            if (hit.collider != null)
-            {
-                allowedDistance = hit.distance - ultimateWarpSkin - halfWidthExtra;
-                if (allowedDistance < 0f) allowedDistance = 0f;
-            }
+            allowedDistance = hit.distance - ultimateWarpSkin - halfWidthExtra;
+            if (allowedDistance < 0f) allowedDistance = 0f;
         }
 
         Vector3 target = startPos + new Vector3(direction * allowedDistance, 0f, 0f);
@@ -369,29 +405,26 @@ public class KaisaAI : MonoBehaviour
         }
     }
 
-    // ==========================================
-    // ท่าไม้ตาย (อัปเกรด: กันดาเมจเบิ้ล + รองรับ Box)
-    // ==========================================
     public void UltimateDamageEvent()
     {
-        if (!ultimateDamageFired)
-        {
-            ultimateDamageFired = true;
-            UltimateEventBus.RaiseDamage(transform);
-        }
+        if (ultimateDamageFired) return;
 
-        Vector2 center = UltimateAttackPoint != null ? (Vector2)UltimateAttackPoint.position : (AttackPoint != null ? (Vector2)AttackPoint.transform.position : (Vector2)transform.position);
+        ultimateDamageFired = true;
+        UltimateEventBus.RaiseDamage(transform);
 
-        Collider2D[] hits;
-        if (ultimateUseBox)
-        {
-            hits = Physics2D.OverlapBoxAll(center, ultimateBoxSize, ultimateBoxAngle, Opponent);
-        }
-        else
-        {
-            float hitRadius = radius * ultimateHitRadiusMultiplier;
-            hits = Physics2D.OverlapCircleAll(center, hitRadius, Opponent);
-        }
+        Vector2 startPos = transform.position;
+        float direction = transform.localScale.x >= 0 ? 1f : -1f;
+        Vector2 dir = new Vector2(direction, 0f);
+        float maxDistance = 50f;
+
+        RaycastHit2D wallHit = Physics2D.Raycast(startPos, dir, maxDistance, ultimateWarpBlockLayers);
+        float dashDistance = wallHit.collider != null ? wallHit.distance : maxDistance;
+
+        Vector2 boxCenter = startPos + new Vector2(direction * (dashDistance / 2f), 0f);
+        float boxHeight = boxCollider != null ? boxCollider.size.y : 3f;
+        Vector2 dashBoxSize = new Vector2(dashDistance, boxHeight);
+
+        Collider2D[] hits = Physics2D.OverlapBoxAll(boxCenter, dashBoxSize, 0f, Opponent);
 
         foreach (var h in hits)
         {
@@ -411,7 +444,7 @@ public class KaisaAI : MonoBehaviour
         Time.timeScale = 1f;
         anim.updateMode = AnimatorUpdateMode.Normal;
         inUltimate = false;
-        preparingUltimate = false; // เคลียร์เพื่อกันบั๊กเดินไม่ได้
+        preparingUltimate = false;
         attack = false;
         movementLocked = false;
 
@@ -422,61 +455,53 @@ public class KaisaAI : MonoBehaviour
         UltimateEventBus.RaiseFinish(transform);
     }
 
-    // ==========================================
-    // ตัวช่วยวาดเส้นและสีพื้นที่ในหน้าต่าง Scene (อัปเกรดสีสันให้ดูง่ายขึ้น)
-    // ==========================================
     private void OnDrawGizmosSelected()
     {
-        // 1. พื้นที่โจมตีปกติ (สีแดงโปร่งใส)
         if (AttackPoint != null)
         {
-            Gizmos.color = new Color(1f, 0f, 0f, 0.3f); // แดงโปร่งใส (Alpha 0.3)
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
             Gizmos.DrawSphere(AttackPoint.transform.position, radius);
-            Gizmos.color = Color.red; // ขอบแดงเข้ม
+            Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(AttackPoint.transform.position, radius);
         }
 
-        // 2. พื้นที่นั่งตี (สีน้ำเงินโปร่งใส)
         if (CrouchAttackPoint != null)
         {
-            Gizmos.color = new Color(0f, 0f, 1f, 0.3f); // น้ำเงินโปร่งใส
+            Gizmos.color = new Color(0f, 0f, 1f, 0.3f);
             Gizmos.DrawSphere(CrouchAttackPoint.transform.position, crouchRadius);
-            Gizmos.color = Color.blue; // ขอบน้ำเงินเข้ม
+            Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(CrouchAttackPoint.transform.position, crouchRadius);
         }
 
-        // 3. พื้นที่ท่าไม้ตาย (สีเหลืองโปร่งใส)
-        Vector2 center = UltimateAttackPoint != null ? (Vector2)UltimateAttackPoint.position : (AttackPoint != null ? (Vector2)AttackPoint.transform.position : (Vector2)transform.position);
-        if (ultimateUseBox)
-        {
-            Gizmos.color = new Color(1f, 0.9f, 0f, 0.3f); // เหลืองโปร่งใส
-            Gizmos.DrawCube(center, ultimateBoxSize);
-            Gizmos.color = Color.yellow; // ขอบเหลืองเข้ม
-            Gizmos.DrawWireCube(center, ultimateBoxSize);
-        }
-        else
-        {
-            Gizmos.color = new Color(1f, 0.9f, 0f, 0.3f);
-            Gizmos.DrawSphere(center, radius * ultimateHitRadiusMultiplier);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(center, radius * ultimateHitRadiusMultiplier);
-        }
+        Vector2 startPos = transform.position;
+        float direction = transform.localScale.x >= 0 ? 1f : -1f;
+        Vector2 dir = new Vector2(direction, 0f);
+        float maxDistance = 50f;
 
-        // ==========================================
-        // 🔥 เพิ่มพิเศษ: วงแหวนบอกระยะการเดินของ AI (ช่วยให้ตั้งค่าตรง Ranges ง่ายขึ้น)
-        // ==========================================
+        RaycastHit2D wallHit = Physics2D.Raycast(startPos, dir, maxDistance, ultimateWarpBlockLayers);
+        float dashDistance = wallHit.collider != null ? wallHit.distance : maxDistance;
 
-        // เส้นสีขาว: ระยะมองเห็น (Detect Range) AI จะเริ่มวิ่งหาเมื่อเราเข้าวงนี้
+        Vector2 boxCenter = startPos + new Vector2(direction * (dashDistance / 2f), 0f);
+        float boxHeight = boxCollider != null ? boxCollider.size.y : 3f;
+        Vector2 dashBoxSize = new Vector2(dashDistance, boxHeight);
+
+        Gizmos.color = new Color(1f, 0.9f, 0f, 0.3f);
+        Gizmos.DrawCube(boxCenter, dashBoxSize);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(boxCenter, dashBoxSize);
+
         Gizmos.color = Color.white;
         Gizmos.DrawWireSphere(transform.position, detectRange);
-
-        // เส้นสีม่วง: ระยะหวงตัว (Min Stop Distance) AI จะเบรกทันทีที่แตะเส้นนี้
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, minStopDistance);
     }
 
     // ==========================================
-    // Animation Event Receivers (เพิ่มไว้เพื่อกัน Error แดงใน Console)
+    // ตัวรับ Event เปล่าๆ ป้องกัน Error แดง
     // ==========================================
     public void StartUltimate() { }
+    public void OnAttackStart() { }
+    public void OnAttackEnd() { }
+    public void NormalAttackLockMovement() { }
+    public void NormalAttackUnlockMovement() { }
 }
