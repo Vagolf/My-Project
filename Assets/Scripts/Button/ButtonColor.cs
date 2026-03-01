@@ -1,8 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class ButtonColor : MonoBehaviour, ISelectableButton, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, IPointerClickHandler
+// เอา ISelectHandler และ IDeselectHandler ออก เพื่อไม่ให้ Unity มายุ่งตอนเราคลิกที่ว่าง
+public class ButtonColor : MonoBehaviour, ISelectableButton, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public Color normalColor = Color.white;
     public Color highlightColor = Color.yellow;
@@ -14,76 +15,62 @@ public class ButtonColor : MonoBehaviour, ISelectableButton, IPointerEnterHandle
     public string groupKey { get; set; } = string.Empty;
     [Tooltip("Optional explicit grouping root. Buttons referencing the same container are in one set.")]
     public Transform groupContainer { get; set; }
+
     private bool isSelected = false;
 
     private void Start()
     {
         if (buttonImage == null)
             buttonImage = GetComponent<Image>();
-            
+
         if (buttonImage != null)
             buttonImage.color = normalColor;
-            
+
         if (groupManager == null)
         {
             groupManager = GetComponentInParent<ButtonGroupManager>();
-            if (groupManager != null)
-            {
-                groupManager.AddButton(this);
-            }
         }
-    }
 
-    public void OnSelect(BaseEventData eventData)
-    {
-        isSelected = true;
-        if (buttonImage != null)
-            buttonImage.color = selectedColor;
-        groupManager?.OnButtonChosen(this);
+        if (groupManager != null)
+        {
+            // แอดปุ่มนี้เข้าไปใน Manager
+            groupManager.AddButton(this);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        // ถ้ายังไม่ถูกเลือก ให้แสดงสีตอนเมาส์ชี้
         if (!isSelected && buttonImage != null)
             buttonImage.color = highlightColor;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        // ถ้าเอาเมาส์ออกและยังไม่ถูกเลือก ให้กลับเป็นสีปกติ
         if (!isSelected && buttonImage != null)
-            buttonImage.color = normalColor;
-    }
-
-    public void OnDeselect(BaseEventData eventData)
-    {
-        // Ignore global deselect; manager handles resetting within group
-        // This allows multiple groups to keep their own selected state concurrently
-        if (groupManager != null && groupManager.IsCurrentSelected(this))
-        {
-            isSelected = true;
-            if (buttonImage != null)
-                buttonImage.color = selectedColor;
-            return;
-        }
-        // If we reach here, this button is not the selected one in its group
-        // Reset to normal state
-        isSelected = false;
-        if (buttonImage != null)
-            buttonImage.color = normalColor;
-    }
-
-    public void SetToNormal()
-    {
-        isSelected = false;
-        if (buttonImage != null)
             buttonImage.color = normalColor;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // เมื่อโดนคลิก ให้ล็อคตัวเองเป็นสถานะถูกเลือกทันที
         isSelected = true;
         if (buttonImage != null)
             buttonImage.color = selectedColor;
-        groupManager?.OnButtonChosen(this);
+
+        // แจ้ง Manager ให้ไปไล่เปลี่ยนสีปุ่มอื่นในกลุ่มเดียวกันให้กลับเป็นสี Normal
+        if (groupManager != null)
+        {
+            groupManager.OnButtonChosen(this);
+        }
+    }
+
+    // ฟังก์ชันนี้ Manager จะเป็นคนเรียกใช้เมื่อมีปุ่มอื่นในกลุ่มเดียวกันถูกกด
+    public void SetToNormal()
+    {
+        isSelected = false;
+        if (buttonImage != null)
+            buttonImage.color = normalColor;
     }
 }
